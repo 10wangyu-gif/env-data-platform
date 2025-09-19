@@ -4,7 +4,7 @@ status: backlog
 created: 2025-09-19T11:32:51Z
 progress: 0%
 prd: .claude/prds/env-data-platform.md
-github: [Will be updated when synced to GitHub]
+github: https://github.com/allenwang1207/env-data-platform
 ---
 
 # Epic: 环保数据集成平台 (env-data-platform)
@@ -332,24 +332,24 @@ Apache Hop单实例架构:
 ## 任务创建总结
 
 ### 已创建任务
-- [ ] 001.md - Go单体应用基础框架搭建 (parallel: true)
-- [ ] 002.md - 数据库架构设计与实现 (parallel: true)
-- [ ] 003.md - Apache Hop单实例环境搭建 (parallel: true)
-- [ ] 004.md - 用户认证授权系统实现 (parallel: false)
-- [ ] 005.md - 自研ETL可视化设计器开发 (parallel: false)
-- [ ] 006.md - Hop Pipeline XML生成器和管理系统 (parallel: false)
-- [ ] 007.md - 212协议数据接入实现 (parallel: false)
-- [ ] 008.md - 多源数据接入组件开发 (parallel: true)
-- [ ] 009.md - 数据源管理界面开发 (parallel: true)
-- [ ] 010.md - 数据资产目录系统开发 (parallel: false)
-- [ ] 011.md - API服务网关实现 (parallel: true)
-- [ ] 012.md - API开发者门户开发 (parallel: false)
-- [ ] 013.md - 前端基础应用框架开发 (parallel: true)
-- [ ] 014.md - 前端业务页面开发 (parallel: false)
-- [ ] 015.md - 前端ETL设计器界面集成 (parallel: false)
-- [ ] 016.md - 智能运维监控系统开发 (parallel: true)
-- [ ] 017.md - 系统集成测试 (parallel: false)
-- [ ] 018.md - 容器化部署和配置管理 (parallel: true)
+- [ ] [#2](https://github.com/allenwang1207/env-data-platform/issues/2) - Go单体应用基础框架搭建 (parallel: true)
+- [ ] [#3](https://github.com/allenwang1207/env-data-platform/issues/3) - 数据库架构设计与实现 (parallel: true)
+- [ ] [#4](https://github.com/allenwang1207/env-data-platform/issues/4) - Apache Hop单实例环境搭建 (parallel: true)
+- [ ] [#5](https://github.com/allenwang1207/env-data-platform/issues/5) - 用户认证授权系统实现 (parallel: false)
+- [ ] [#6](https://github.com/allenwang1207/env-data-platform/issues/6) - 自研ETL可视化设计器开发 (parallel: false)
+- [ ] [#7](https://github.com/allenwang1207/env-data-platform/issues/7) - Hop Pipeline XML生成器和管理系统 (parallel: false)
+- [ ] [#8](https://github.com/allenwang1207/env-data-platform/issues/8) - 212协议数据接入实现 (parallel: false)
+- [ ] [#9](https://github.com/allenwang1207/env-data-platform/issues/9) - 多源数据接入组件开发 (parallel: true)
+- [ ] [#10](https://github.com/allenwang1207/env-data-platform/issues/10) - 数据源管理界面开发 (parallel: true)
+- [ ] [#11](https://github.com/allenwang1207/env-data-platform/issues/11) - 数据资产目录系统开发 (parallel: false)
+- [ ] [#12](https://github.com/allenwang1207/env-data-platform/issues/12) - API服务网关实现 (parallel: true)
+- [ ] [#13](https://github.com/allenwang1207/env-data-platform/issues/13) - API开发者门户开发 (parallel: false)
+- [ ] [#14](https://github.com/allenwang1207/env-data-platform/issues/14) - 前端基础应用框架开发 (parallel: true)
+- [ ] [#15](https://github.com/allenwang1207/env-data-platform/issues/15) - 前端业务页面开发 (parallel: false)
+- [ ] [#16](https://github.com/allenwang1207/env-data-platform/issues/16) - 前端ETL设计器界面集成 (parallel: false)
+- [ ] [#17](https://github.com/allenwang1207/env-data-platform/issues/17) - 智能运维监控系统开发 (parallel: true)
+- [ ] [#18](https://github.com/allenwang1207/env-data-platform/issues/18) - 系统集成测试 (parallel: false)
+- [ ] [#19](https://github.com/allenwang1207/env-data-platform/issues/19) - 容器化部署和配置管理 (parallel: true)
 
 ### 任务统计
 - **总任务数**: 18个
