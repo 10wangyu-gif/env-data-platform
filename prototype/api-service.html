@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API服务管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+    <style>
+        .view-toggle-btn.active {
+            background-color: var(--doubao-primary-500) !important;
+            color: white !important;
+        }
+        
+        .view-toggle-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .view-toggle-btn:hover {
+            background-color: var(--doubao-primary-100);
+            color: var(--doubao-primary-600);
+        }
+        
+        .view-toggle-btn.active:hover {
+            background-color: var(--doubao-primary-600) !important;
+            color: white !important;
+        }
+        
+        /* 列表视图样式优化 */
+        .doubao-table tbody tr {
+            border-bottom: 1px solid var(--doubao-border);
+            transition: background-color 0.2s ease;
+        }
+        
+        .doubao-table tbody tr:hover {
+            background-color: var(--doubao-bg-hover);
+        }
+        
+        .doubao-table tbody td {
+            padding: var(--doubao-space-16);
+            vertical-align: middle;
+        }
+        
+        .doubao-table tbody td:last-child {
+            text-align: center;
+        }
+        
+        .doubao-table .action-btn {
+            color: var(--doubao-primary-500);
+            padding: var(--doubao-space-8);
+            border-radius: var(--doubao-radius-sm);
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .doubao-table .action-btn:hover {
+            background-color: var(--doubao-primary-50);
+            opacity: 0.8;
+        }
+        
+        .doubao-table .action-btn:disabled {
+            color: var(--doubao-text-tertiary);
+            cursor: not-allowed;
+        }
+        
+        .doubao-table .action-btn:disabled:hover {
+            background-color: transparent;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 页面头部 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in">
+        <div class="doubao-flex doubao-items-center doubao-justify-between">
+            <div>
+                <h1 class="doubao-text-4xl doubao-font-semibold doubao-mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">API服务管理</h1>
+                <p class="doubao-text-lg" style="color: var(--doubao-text-secondary);">管理和发布环保数据API服务，提供统一的数据接口访问</p>
+            </div>
+            <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                <button class="doubao-btn doubao-btn-secondary doubao-btn-lg">
+                    <i class="fas fa-chart-line" style="margin-right: var(--doubao-space-8);"></i>
+                    API统计
+                </button>
+                <button onclick="openCreateApiModal()" class="doubao-btn doubao-btn-primary doubao-btn-lg">
+                    <i class="fas fa-plus" style="margin-right: var(--doubao-space-8);"></i>
+                    创建API
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 - 豆包风格 -->
+    <div class="doubao-grid doubao-grid-cols-4 doubao-mb-24">
+        <div class="doubao-stat-card doubao-card-air doubao-animate-fade-in">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-air);">24</div>
+                    <div class="doubao-stat-label">API总数</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +3 本月
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="doubao-stat-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-200">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-water);">45.2K</div>
+                    <div class="doubao-stat-label">今日调用</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +12% 昨日
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="doubao-stat-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-300">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-soil);">156</div>
+                    <div class="doubao-stat-label">应用接入</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +8 本月
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="doubao-stat-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-400">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-forest);">99.9%</div>
+                    <div class="doubao-stat-label">服务可用性</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-check text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        正常运行
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选和搜索 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in">
+        <div class="doubao-flex flex-wrap doubao-items-center" style="gap: var(--doubao-space-16);">
+            <div class="flex-1 min-w-64">
+                <div class="relative">
+                    <input type="text" placeholder="搜索API名称、路径..." 
+                           class="form-input pl-10" id="apiSearch">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--doubao-text-tertiary);"></i>
+                </div>
+            </div>
+            <select class="form-select w-40" id="categoryFilter">
+                <option value="">所有分类</option>
+                <option value="air">空气质量</option>
+                <option value="water">水质监测</option>
+                <option value="pollution">污染源</option>
+                <option value="weather">气象数据</option>
+            </select>
+            <select class="form-select w-32" id="statusFilter">
+                <option value="">所有状态</option>
+                <option value="published">已发布</option>
+                <option value="draft">草稿</option>
+                <option value="deprecated">已弃用</option>
+            </select>
+            <button class="doubao-btn doubao-btn-secondary">
+                <i class="fas fa-sync-alt" style="margin-right: var(--doubao-space-8);"></i>
+                刷新
+            </button>
+            <div class="doubao-flex" style="background-color: var(--doubao-bg-container); border: 1px solid var(--doubao-border); border-radius: var(--doubao-radius-md); padding: 2px;">
+                <button id="listViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn active" onclick="switchToListView()">
+                    <i class="fas fa-list" style="margin-right: var(--doubao-space-4);"></i>列表
+                </button>
+                <button id="cardViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn" onclick="switchToCardView()">
+                    <i class="fas fa-th-large" style="margin-right: var(--doubao-space-4);"></i>卡片
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API列表 - 豆包风格 -->
+    <div>
+        <!-- 列表视图 -->
+        <div id="listView" style="display: block;">
+            <div class="doubao-card doubao-animate-fade-in" style="padding: 0;">
+                <div class="overflow-x-auto">
+                    <table class="doubao-table doubao-w-full" style="border-collapse: collapse; background-color: var(--doubao-bg-container); border-radius: var(--doubao-radius-lg); overflow: hidden;">
+                        <thead>
+                            <tr style="background-color: var(--doubao-bg-page);">
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 25%;">API名称</th>
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 20%;">路径</th>
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 8%;">方法</th>
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 10%;">状态</th>
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 15%;">今日调用/响应时间</th>
+                                <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">成功率</th>
+                                <th style="padding: var(--doubao-space-16); text-align: center; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 10%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 空气质量API -->
+                            <tr>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center">
+                                        <div class="doubao-icon doubao-icon-air" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                            <i class="fas fa-wind"></i>
+                                        </div>
+                                        <div>
+                                            <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">空气质量实时数据API</div>
+                                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">提供各监测站点的实时空气质量数据</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm" style="color: var(--doubao-text-secondary); font-family: monospace;">/api/v1/air-quality/realtime</td>
+                                <td>
+                                    <span style="color: var(--doubao-primary-500); font-weight: 500;">GET</span>
+                                </td>
+                                <td>
+                                    <span class="doubao-tag doubao-tag-success">已发布</span>
+                                </td>
+                                <td>
+                                    <div class="doubao-text-sm">
+                                        <div class="doubao-font-medium">8.9K / 45ms</div>
+                                        <div style="color: var(--doubao-text-secondary);">调用量 / 响应</div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">99.8%</td>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                                        <button class="action-btn" title="测试API" onclick="testApi('air-quality')">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="action-btn" title="查看文档" onclick="viewApiDoc('air-quality')">
+                                            <i class="fas fa-book"></i>
+                                        </button>
+                                        <button class="action-btn" title="更多操作">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- 地表水质监测API -->
+                            <tr>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center">
+                                        <div class="doubao-icon doubao-icon-water" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                            <i class="fas fa-tint"></i>
+                                        </div>
+                                        <div>
+                                            <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">地表水质监测API</div>
+                                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">提供地表水环境质量监测数据</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm" style="color: var(--doubao-text-secondary); font-family: monospace;">/api/v1/water-quality/surface</td>
+                                <td>
+                                    <span style="color: var(--doubao-primary-500); font-weight: 500;">GET</span>
+                                </td>
+                                <td>
+                                    <span class="doubao-tag doubao-tag-success">已发布</span>
+                                </td>
+                                <td>
+                                    <div class="doubao-text-sm">
+                                        <div class="doubao-font-medium">6.2K / 52ms</div>
+                                        <div style="color: var(--doubao-text-secondary);">调用量 / 响应</div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">99.5%</td>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                                        <button class="action-btn" title="测试API" onclick="testApi('water-quality')">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="action-btn" title="查看文档" onclick="viewApiDoc('water-quality')">
+                                            <i class="fas fa-book"></i>
+                                        </button>
+                                        <button class="action-btn" title="更多操作">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- 污染源排放数据API -->
+                            <tr>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center">
+                                        <div class="doubao-icon doubao-icon-soil" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                            <i class="fas fa-industry"></i>
+                                        </div>
+                                        <div>
+                                            <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">污染源排放数据API</div>
+                                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">重点排污企业的污染物排放数据</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm" style="color: var(--doubao-text-secondary); font-family: monospace;">/api/v1/pollution-source/emission</td>
+                                <td>
+                                    <span style="color: var(--doubao-primary-500); font-weight: 500;">GET</span>
+                                </td>
+                                <td>
+                                    <span class="doubao-tag doubao-tag-warning">维护中</span>
+                                </td>
+                                <td>
+                                    <div class="doubao-text-sm">
+                                        <div class="doubao-font-medium">0 / -</div>
+                                        <div style="color: var(--doubao-text-secondary);">调用量 / 响应</div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">-</td>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                                        <button class="action-btn" title="测试API" disabled>
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="action-btn" title="查看文档" onclick="viewApiDoc('pollution-source')">
+                                            <i class="fas fa-book"></i>
+                                        </button>
+                                        <button class="action-btn" title="更多操作">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- 气象观测数据API -->
+                            <tr>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center">
+                                        <div class="doubao-icon" style="background-color: #fef3c7; color: #d97706; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-12);">
+                                            <i class="fas fa-cloud-sun"></i>
+                                        </div>
+                                        <div>
+                                            <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">气象观测数据API</div>
+                                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">提供气象站观测数据</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm" style="color: var(--doubao-text-secondary); font-family: monospace;">/api/v1/weather/observation</td>
+                                <td>
+                                    <span style="color: var(--doubao-primary-500); font-weight: 500;">GET</span>
+                                </td>
+                                <td>
+                                    <span class="doubao-tag doubao-tag-success">已发布</span>
+                                </td>
+                                <td>
+                                    <div class="doubao-text-sm">
+                                        <div class="doubao-font-medium">3.8K / 38ms</div>
+                                        <div style="color: var(--doubao-text-secondary);">调用量 / 响应</div>
+                                    </div>
+                                </td>
+                                <td class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">99.9%</td>
+                                <td>
+                                    <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                                        <button class="action-btn" title="测试API" onclick="testApi('weather')">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <button class="action-btn" title="查看文档" onclick="viewApiDoc('weather')">
+                                            <i class="fas fa-book"></i>
+                                        </button>
+                                        <button class="action-btn" title="更多操作">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 卡片视图 -->
+        <div id="cardView" class="hidden">
+            <div class="doubao-grid doubao-grid-cols-1 xl:grid-cols-2" style="gap: var(--doubao-space-24);">
+                <!-- 空气质量API -->
+        <div class="doubao-card doubao-card-air doubao-animate-fade-in hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">空气质量实时数据API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/air-quality/realtime</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-success">已发布</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    提供各监测站点的实时空气质量数据，支持按站点、时间范围查询
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">8.9K</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">45ms</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">99.8%</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v1.2.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="testApi('air-quality')">
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('air-quality')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 水质监测API -->
+        <div class="doubao-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100 hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">地表水质监测API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/water-quality/surface</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-success">已发布</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    提供地表水环境质量监测数据，包含COD、氨氮、总磷等水质指标
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">6.2K</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">52ms</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">99.5%</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v1.1.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="testApi('water-quality')">
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('water-quality')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 污染源排放API -->
+        <div class="doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200 hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">污染源排放数据API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/pollution-source/emission</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-warning">维护中</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    重点排污企业的污染物排放数据，通过HJ212协议实时采集
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">0</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">-</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">-</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v1.0.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" disabled>
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('pollution-source')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 气象数据API -->
+        <div class="doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300 hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon" style="background-color: #fef3c7; color: #d97706; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">气象观测数据API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/weather/observation</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-success">已发布</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    提供气象站观测数据，包含温度、湿度、风速风向、降水量等
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">3.8K</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">38ms</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">99.9%</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v1.0.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="testApi('weather')">
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('weather')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 监测站点信息API -->
+        <div class="doubao-card doubao-card-air doubao-animate-fade-in doubao-animate-delay-400 hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon" style="background-color: #f3e8ff; color: #8b5cf6; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">监测站点信息API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/stations/info</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-success">已发布</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    提供各类环境监测站点的基础信息，包括位置、类型、设备信息
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">2.1K</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">28ms</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">100%</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v1.0.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="testApi('stations')">
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('stations')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 数据质量报告API -->
+        <div class="doubao-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-500 hover:shadow-xl cursor-pointer transition-all">
+            <div style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon" style="background-color: #fce7f3; color: #ec4899; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">数据质量报告API</h3>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">/api/v1/data-quality/report</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <span class="doubao-tag doubao-tag-secondary">草稿</span>
+                        <button style="color: var(--doubao-text-tertiary);" class="hover:text-gray-600" onclick="toggleApiMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                    提供数据质量检查结果，包含完整性、准确性、一致性评估
+                </p>
+                
+                <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">0</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">今日调用</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">-</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">平均响应</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-quaternary);">-</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">成功率</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                    <div class="doubao-flex" style="gap: var(--doubao-space-16);">
+                        <span style="color: var(--doubao-primary-500);">GET</span>
+                        <span style="color: var(--doubao-text-secondary);">v0.1.0</span>
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" disabled>
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>测试
+                        </button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm" onclick="viewApiDoc('data-quality')">
+                            <i class="fas fa-book" style="margin-right: var(--doubao-space-4);"></i>文档
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建API模态框 -->
+    <div id="createApiModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-3xl">
+            <div class="modal-header">
+                <h3 class="modal-title">创建API服务</h3>
+                <button onclick="closeCreateApiModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="createApiForm">
+                    <!-- 基本信息 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">基本信息</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">API名称</label>
+                                <input type="text" class="form-input" placeholder="请输入API名称" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">API路径</label>
+                                <div class="flex">
+                                    <span class="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-lg">/api/v1/</span>
+                                    <input type="text" class="form-input rounded-l-none" placeholder="path" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">请求方法</label>
+                                <select class="form-select">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">数据分类</label>
+                                <select class="form-select">
+                                    <option value="air">空气质量</option>
+                                    <option value="water">水质监测</option>
+                                    <option value="pollution">污染源</option>
+                                    <option value="weather">气象数据</option>
+                                    <option value="basic">基础数据</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">API描述</label>
+                            <textarea class="form-textarea" rows="3" placeholder="请详细描述API的功能和用途" required></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据源配置 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">数据源配置</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">数据源</label>
+                                <select class="form-select">
+                                    <option value="air_quality_realtime">空气质量实时数据</option>
+                                    <option value="water_quality_monitoring">地表水质监测</option>
+                                    <option value="pollution_emission">污染源排放数据</option>
+                                    <option value="meteorological_data">气象观测数据</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">查询模式</label>
+                                <select class="form-select">
+                                    <option value="realtime">实时查询</option>
+                                    <option value="cache">缓存查询</option>
+                                    <option value="batch">批量查询</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">SQL查询语句</label>
+                            <textarea class="form-textarea font-mono text-sm" rows="4" placeholder="SELECT * FROM table_name WHERE condition">SELECT station_id, monitor_time, pm25, pm10, so2, no2 
+FROM air_quality_realtime 
+WHERE monitor_time >= ? AND monitor_time <= ?
+ORDER BY monitor_time DESC</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- 参数配置 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">参数配置</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <input type="checkbox" checked>
+                                <div class="flex-1 grid grid-cols-4 gap-3">
+                                    <input type="text" class="form-input text-sm" value="station_id" placeholder="参数名">
+                                    <select class="form-select text-sm">
+                                        <option value="string">String</option>
+                                        <option value="number">Number</option>
+                                        <option value="date">Date</option>
+                                    </select>
+                                    <input type="text" class="form-input text-sm" placeholder="默认值">
+                                    <input type="text" class="form-input text-sm" value="监测站点ID" placeholder="参数描述">
+                                </div>
+                                <button type="button" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <input type="checkbox" checked>
+                                <div class="flex-1 grid grid-cols-4 gap-3">
+                                    <input type="text" class="form-input text-sm" value="start_time" placeholder="参数名">
+                                    <select class="form-select text-sm">
+                                        <option value="date">Date</option>
+                                        <option value="string">String</option>
+                                        <option value="number">Number</option>
+                                    </select>
+                                    <input type="text" class="form-input text-sm" placeholder="默认值">
+                                    <input type="text" class="form-input text-sm" value="开始时间" placeholder="参数描述">
+                                </div>
+                                <button type="button" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-secondary text-sm mt-3">
+                            <i class="fas fa-plus mr-1"></i>添加参数
+                        </button>
+                    </div>
+                    
+                    <!-- 访问控制 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">访问控制</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">认证方式</label>
+                                <select class="form-select">
+                                    <option value="api_key">API Key</option>
+                                    <option value="oauth">OAuth 2.0</option>
+                                    <option value="jwt">JWT Token</option>
+                                    <option value="none">无需认证</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">访问级别</label>
+                                <select class="form-select">
+                                    <option value="public">公开</option>
+                                    <option value="internal">内部</option>
+                                    <option value="partner">合作伙伴</option>
+                                    <option value="private">私有</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">频率限制</label>
+                                <select class="form-select">
+                                    <option value="1000">1000次/小时</option>
+                                    <option value="5000">5000次/小时</option>
+                                    <option value="10000">10000次/小时</option>
+                                    <option value="unlimited">无限制</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">缓存时间</label>
+                                <select class="form-select">
+                                    <option value="0">不缓存</option>
+                                    <option value="300">5分钟</option>
+                                    <option value="900">15分钟</option>
+                                    <option value="1800">30分钟</option>
+                                    <option value="3600">1小时</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeCreateApiModal()" class="btn btn-secondary">取消</button>
+                <button onclick="saveAndTestApi()" class="btn btn-warning">保存并测试</button>
+                <button onclick="saveApi()" class="btn btn-primary">创建API</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API文档模态框 -->
+    <div id="apiDocModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div class="modal-header">
+                <h3 class="modal-title">API文档 - 空气质量实时数据API</h3>
+                <button onclick="closeApiDocModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- API基本信息 -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h4 class="card-title">基本信息</h4>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">接口地址:</span>
+                                    <code class="text-sm bg-gray-100 px-2 py-1 rounded">/api/v1/air-quality/realtime</code>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">请求方法:</span>
+                                    <span class="tag tag-primary">GET</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">版本:</span>
+                                    <span class="text-sm text-gray-900">v1.2.0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">认证方式:</span>
+                                    <span class="text-sm text-gray-900">API Key</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">频率限制:</span>
+                                    <span class="text-sm text-gray-900">1000次/小时</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">缓存时间:</span>
+                                    <span class="text-sm text-gray-900">5分钟</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 请求参数 -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h4 class="card-title">请求参数</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>参数名</th>
+                                    <th>类型</th>
+                                    <th>必填</th>
+                                    <th>默认值</th>
+                                    <th>描述</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>station_id</code></td>
+                                    <td>String</td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>-</td>
+                                    <td>监测站点ID，多个用逗号分隔</td>
+                                </tr>
+                                <tr>
+                                    <td><code>start_time</code></td>
+                                    <td>DateTime</td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>当前时间-1小时</td>
+                                    <td>开始时间，格式：YYYY-MM-DD HH:mm:ss</td>
+                                </tr>
+                                <tr>
+                                    <td><code>end_time</code></td>
+                                    <td>DateTime</td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>当前时间</td>
+                                    <td>结束时间，格式：YYYY-MM-DD HH:mm:ss</td>
+                                </tr>
+                                <tr>
+                                    <td><code>limit</code></td>
+                                    <td>Integer</td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>100</td>
+                                    <td>返回记录数限制，最大1000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 响应示例 -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h4 class="card-title">响应示例</h4>
+                    </div>
+                    <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm">
+                        <pre>{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "total": 24,
+    "records": [
+      {
+        "station_id": "SH001",
+        "station_name": "上海徐汇监测站",
+        "monitor_time": "2024-01-15 14:30:00",
+        "pm25": 35.2,
+        "pm10": 52.8,
+        "so2": 12.1,
+        "no2": 28.5,
+        "aqi": 68,
+        "quality_level": "良",
+        "location": {
+          "latitude": 31.1886,
+          "longitude": 121.4331
+        }
+      }
+    ]
+  },
+  "timestamp": "2024-01-15T14:35:20Z"
+}</pre>
+                    </div>
+                </div>
+                
+                <!-- 错误码说明 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">错误码说明</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>错误码</th>
+                                    <th>说明</th>
+                                    <th>解决方案</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>400</code></td>
+                                    <td>请求参数错误</td>
+                                    <td>检查请求参数格式和类型</td>
+                                </tr>
+                                <tr>
+                                    <td><code>401</code></td>
+                                    <td>未授权访问</td>
+                                    <td>检查API Key是否正确</td>
+                                </tr>
+                                <tr>
+                                    <td><code>429</code></td>
+                                    <td>请求频率超限</td>
+                                    <td>降低请求频率或升级配额</td>
+                                </tr>
+                                <tr>
+                                    <td><code>500</code></td>
+                                    <td>服务器内部错误</td>
+                                    <td>联系技术支持</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeApiDocModal()" class="btn btn-secondary">关闭</button>
+                <button class="btn btn-primary">在线测试</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // 视图切换功能
+        function switchToListView() {
+            document.getElementById('listView').style.display = 'block';
+            document.getElementById('cardView').classList.add('hidden');
+            
+            // 更新按钮状态
+            document.getElementById('listViewBtn').classList.add('active');
+            document.getElementById('cardViewBtn').classList.remove('active');
+        }
+        
+        function switchToCardView() {
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('cardView').classList.remove('hidden');
+            
+            // 更新按钮状态
+            document.getElementById('listViewBtn').classList.remove('active');
+            document.getElementById('cardViewBtn').classList.add('active');
+        }
+        // 打开创建API模态框
+        function openCreateApiModal() {
+            document.getElementById('createApiModal').classList.remove('hidden');
+        }
+        
+        // 关闭创建API模态框
+        function closeCreateApiModal() {
+            document.getElementById('createApiModal').classList.add('hidden');
+        }
+        
+        // 查看API文档
+        function viewApiDoc(apiName) {
+            document.getElementById('apiDocModal').classList.remove('hidden');
+        }
+        
+        // 关闭API文档模态框
+        function closeApiDocModal() {
+            document.getElementById('apiDocModal').classList.add('hidden');
+        }
+        
+        // 测试API
+        function testApi(apiName) {
+            alert(`正在测试 ${apiName} API...`);
+        }
+        
+        // 保存API
+        function saveApi() {
+            alert('API创建成功！');
+            closeCreateApiModal();
+        }
+        
+        // 保存并测试API
+        function saveAndTestApi() {
+            alert('API已保存，正在进行测试...');
+            setTimeout(() => {
+                alert('API测试通过！');
+                closeCreateApiModal();
+            }, 1500);
+        }
+        
+        // API菜单切换
+        function toggleApiMenu(button) {
+            // 这里可以实现API操作菜单的显示/隐藏
+            console.log('Toggle API menu for:', button);
+        }
+        
+        // 搜索功能
+        document.getElementById('apiSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.env-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // 分类筛选
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            const category = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.env-card');
+            
+            cards.forEach(card => {
+                if (!category) {
+                    card.style.display = '';
+                } else {
+                    // 这里可以根据实际的分类逻辑进行筛选
+                    card.style.display = '';
+                }
+            });
+        });
+        
+        // 状态筛选
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            const status = this.value;
+            const cards = document.querySelectorAll('.env-card');
+            
+            cards.forEach(card => {
+                const statusTag = card.querySelector('.tag');
+                if (!status) {
+                    card.style.display = '';
+                } else {
+                    const tagText = statusTag.textContent.trim();
+                    const statusMap = {
+                        'published': '已发布',
+                        'draft': '草稿',
+                        'deprecated': '已弃用'
+                    };
+                    
+                    if (tagText === statusMap[status]) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        // 模态框外部点击关闭
+        document.getElementById('createApiModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreateApiModal();
+            }
+        });
+        
+        document.getElementById('apiDocModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeApiDocModal();
+            }
+        });
+    </script>
+</body>
+</html>

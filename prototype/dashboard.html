@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>概览仪表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+</head>
+<body style="background-color: var(--ant-gray-2); padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 页面头部 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in">
+        <div class="doubao-flex doubao-items-center doubao-justify-between">
+            <div>
+                <h1 class="doubao-text-4xl doubao-font-semibold doubao-mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">概览仪表板</h1>
+                <p class="doubao-text-lg" style="color: var(--doubao-text-secondary);">环保数据集成平台实时监控与统计概览</p>
+            </div>
+            <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                <button class="doubao-btn doubao-btn-secondary doubao-btn-lg">
+                    <i class="fas fa-sync-alt" style="margin-right: var(--doubao-space-8);"></i>
+                    刷新数据
+                </button>
+                <button class="doubao-btn doubao-btn-primary doubao-btn-lg">
+                    <i class="fas fa-download" style="margin-right: var(--doubao-space-8);"></i>
+                    导出报告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心指标卡片 - 豆包风格 -->
+    <div class="doubao-grid doubao-grid-cols-4 doubao-mb-24">
+        <!-- 数据源连接数 -->
+        <div class="doubao-stat-card doubao-card-air doubao-animate-fade-in">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-air);">24</div>
+                    <div class="doubao-stat-label">数据源连接</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +3 较昨日
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时数据流量 -->
+        <div class="doubao-stat-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-stream"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-water);">1.2K</div>
+                    <div class="doubao-stat-label">实时数据流(条/秒)</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +15% 较昨日
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API调用次数 -->
+        <div class="doubao-stat-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-soil);">45.2K</div>
+                    <div class="doubao-stat-label">API调用(今日)</div>
+                    <div class="doubao-stat-change negative">
+                        <i class="fas fa-arrow-down text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        -5% 较昨日
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统健康度 -->
+        <div class="doubao-stat-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-forest);">99.8%</div>
+                    <div class="doubao-stat-label">系统健康度</div>
+                    <div class="doubao-stat-change neutral">
+                        <i class="fas fa-check text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        运行正常
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 环保数据概览区域 - 豆包风格 -->
+    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-24">
+        <!-- 空气质量监测 -->
+        <div class="doubao-card doubao-card-air doubao-animate-fade-in doubao-animate-delay-400">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-sm doubao-icon-air" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-card-title">空气质量监测</h3>
+                            <p class="doubao-card-subtitle">实时监测站点状态</p>
+                        </div>
+                    </div>
+                    <div class="doubao-tag doubao-tag-success">在线</div>
+                </div>
+            </div>
+            <div class="doubao-space-y-12">
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(64, 128, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">PM2.5</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-air);">35 μg/m³</span>
+                        <span class="doubao-tag doubao-tag-success">良</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(64, 128, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">PM10</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-air);">52 μg/m³</span>
+                        <span class="doubao-tag doubao-tag-success">良</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(64, 128, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">AQI</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-air);">68</span>
+                        <span class="doubao-tag doubao-tag-success">良</span>
+                    </div>
+                </div>
+                <div style="padding: var(--doubao-space-12); background-color: var(--doubao-bg-hover); border-radius: var(--doubao-radius-md);">
+                    <div class="doubao-text-xs doubao-mb-8" style="color: var(--doubao-text-tertiary);">监测站点: 127个 | 在线: 124个</div>
+                    <div class="doubao-progress">
+                        <div class="doubao-progress-bar doubao-progress-primary" style="width: 97.6%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 水质监测 -->
+        <div class="doubao-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-500">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-sm doubao-icon-water" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-card-title">水质监测</h3>
+                            <p class="doubao-card-subtitle">地表水环境质量</p>
+                        </div>
+                    </div>
+                    <div class="doubao-tag doubao-tag-success">在线</div>
+                </div>
+            </div>
+            <div class="doubao-space-y-12">
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(22, 93, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">COD</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-water);">15.2 mg/L</span>
+                        <span class="doubao-tag doubao-tag-info">Ⅱ类</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(22, 93, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">氨氮</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-water);">0.45 mg/L</span>
+                        <span class="doubao-tag doubao-tag-info">Ⅱ类</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(22, 93, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">总磷</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-water);">0.08 mg/L</span>
+                        <span class="doubao-tag doubao-tag-success">Ⅰ类</span>
+                    </div>
+                </div>
+                <div style="padding: var(--doubao-space-12); background-color: var(--doubao-bg-hover); border-radius: var(--doubao-radius-md);">
+                    <div class="doubao-text-xs doubao-mb-8" style="color: var(--doubao-text-tertiary);">监测断面: 89个 | 在线: 87个</div>
+                    <div class="doubao-progress">
+                        <div class="doubao-progress-bar doubao-progress-primary" style="width: 97.8%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 污染源监控 -->
+        <div class="doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-600">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-sm doubao-icon-soil" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-card-title">污染源监控</h3>
+                            <p class="doubao-card-subtitle">HJ212协议接入</p>
+                        </div>
+                    </div>
+                    <div class="doubao-tag doubao-tag-warning">部分异常</div>
+                </div>
+            </div>
+            <div class="doubao-space-y-12">
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(255, 125, 0, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">重点监控企业</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-soil);">156</span>
+                        <span class="doubao-tag doubao-tag-warning">企业</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(255, 125, 0, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">在线监测设备</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-soil);">342</span>
+                        <span class="doubao-tag doubao-tag-warning">台</span>
+                    </div>
+                </div>
+                <div class="doubao-flex doubao-justify-between doubao-items-center" style="padding: var(--doubao-space-12); background-color: rgba(255, 125, 0, 0.05); border-radius: var(--doubao-radius-md);">
+                    <span class="doubao-text-md" style="color: var(--doubao-text-secondary);">数据传输率</span>
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <span class="doubao-text-xl doubao-font-semibold" style="color: var(--eco-soil);">94.2%</span>
+                        <span class="doubao-tag doubao-tag-warning">良好</span>
+                    </div>
+                </div>
+                <div style="padding: var(--doubao-space-12); background-color: var(--doubao-bg-hover); border-radius: var(--doubao-radius-md);">
+                    <div class="doubao-text-xs doubao-mb-8" style="color: var(--doubao-text-tertiary);">异常设备: 8台 | 需要维护</div>
+                    <div class="doubao-progress">
+                        <div class="doubao-progress-bar doubao-progress-warning" style="width: 94.2%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据流量图表区域 -->
+    <div class="doubao-grid doubao-grid-cols-2 doubao-mb-24">
+        <!-- 实时数据流量趋势 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-700">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-air" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-chart-area"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-card-title">实时数据流量趋势</h3>
+                            <p class="doubao-card-subtitle">数据处理吞吐量监控</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-space-x-8">
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm">今日</button>
+                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm">本周</button>
+                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm">本月</button>
+                    </div>
+                </div>
+            </div>
+            <div class="h-64 p-4 rounded-lg" style="background: linear-gradient(135deg, rgba(64, 128, 255, 0.02) 0%, rgba(255, 255, 255, 0.8) 100%);">
+                <canvas id="dataFlowChart"></canvas>
+            </div>
+        </div>
+
+        <!-- API调用统计 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-800">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-water" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="doubao-card-title">API调用统计</h3>
+                            <p class="doubao-card-subtitle">接口请求量分析</p>
+                        </div>
+                    </div>
+                    <div class="doubao-flex doubao-space-x-8">
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm">今日</button>
+                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm">本周</button>
+                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm">本月</button>
+                    </div>
+                </div>
+            </div>
+            <div class="h-64 p-4 rounded-lg" style="background: linear-gradient(135deg, rgba(22, 93, 255, 0.02) 0%, rgba(255, 255, 255, 0.8) 100%);">
+                <canvas id="apiCallChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ETL任务状态和最新告警 -->
+    <div class="doubao-grid doubao-grid-cols-2 doubao-mb-24">
+        <!-- ETL任务执行状态 -->
+        <div class="doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-900">
+            <div class="doubao-card-header">
+                <div class="doubao-flex doubao-items-center">
+                    <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-12);">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div>
+                        <h3 class="doubao-card-title">ETL任务执行状态</h3>
+                        <p class="doubao-card-subtitle">最近24小时任务执行情况</p>
+                    </div>
+                </div>
+            </div>
+            <div class="doubao-space-y-12">
+                <div class="doubao-card" style="padding: var(--doubao-space-16); background: linear-gradient(135deg, rgba(0, 180, 42, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%); border-left: 4px solid var(--eco-forest);">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-flex doubao-items-center">
+                            <i class="fas fa-check-circle" style="margin-right: var(--doubao-space-12); color: var(--eco-forest);"></i>
+                            <div>
+                                <div class="doubao-text-md doubao-font-semibold" style="color: var(--doubao-text-primary);">环保数据同步任务</div>
+                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">执行成功 - 2分钟前</div>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-success">成功</span>
+                    </div>
+                </div>
+                
+                <div class="doubao-card" style="padding: var(--doubao-space-16); background: linear-gradient(135deg, rgba(64, 128, 255, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%); border-left: 4px solid var(--eco-air);">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-flex doubao-items-center">
+                            <i class="fas fa-clock doubao-animate-fade-in" style="margin-right: var(--doubao-space-12); color: var(--eco-air);"></i>
+                            <div>
+                                <div class="doubao-text-md doubao-font-semibold" style="color: var(--doubao-text-primary);">HJ212数据清洗</div>
+                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">正在执行 - 剩余5分钟</div>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-info">运行中</span>
+                    </div>
+                </div>
+                
+                <div class="doubao-card" style="padding: var(--doubao-space-16); background: linear-gradient(135deg, rgba(255, 125, 0, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%); border-left: 4px solid var(--eco-soil);">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-flex doubao-items-center">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: var(--doubao-space-12); color: var(--eco-soil);"></i>
+                            <div>
+                                <div class="doubao-text-md doubao-font-semibold" style="color: var(--doubao-text-primary);">数据质量检查</div>
+                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">执行警告 - 15分钟前</div>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-warning">警告</span>
+                    </div>
+                </div>
+                
+                <div class="doubao-card" style="padding: var(--doubao-space-16); background: linear-gradient(135deg, rgba(245, 63, 63, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%); border-left: 4px solid var(--doubao-danger);">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-flex doubao-items-center">
+                            <i class="fas fa-times-circle" style="margin-right: var(--doubao-space-12); color: var(--doubao-danger);"></i>
+                            <div>
+                                <div class="doubao-text-md doubao-font-semibold" style="color: var(--doubao-text-primary);">API数据导入</div>
+                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">执行失败 - 1小时前</div>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-danger">失败</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最新告警信息 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-1000">
+            <div class="doubao-card-header">
+                <h3 class="doubao-card-title">最新告警信息</h3>
+                <p class="doubao-card-subtitle">系统监控与数据质量告警</p>
+            </div>
+            <div class="doubao-space-y-12">
+                <div class="doubao-flex doubao-items-start doubao-space-x-12" style="padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-danger); background-color: rgba(245, 63, 63, 0.05); border-radius: var(--doubao-radius-md);">
+                    <i class="fas fa-exclamation-circle" style="color: var(--doubao-danger); margin-top: 2px;"></i>
+                    <div class="flex-1">
+                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">数据源连接中断</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">监测站点SH-001连接异常，请及时处理</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-tertiary); margin-top: var(--doubao-space-4);">2分钟前</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-start doubao-space-x-12" style="padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-warning); background-color: rgba(255, 125, 0, 0.05); border-radius: var(--doubao-radius-md);">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--doubao-warning); margin-top: 2px;"></i>
+                    <div class="flex-1">
+                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">数据质量异常</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">PM2.5数据存在异常值，建议检查传感器</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-tertiary); margin-top: var(--doubao-space-4);">15分钟前</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-start doubao-space-x-12" style="padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-info); background-color: rgba(22, 93, 255, 0.05); border-radius: var(--doubao-radius-md);">
+                    <i class="fas fa-info-circle" style="color: var(--doubao-info); margin-top: 2px;"></i>
+                    <div class="flex-1">
+                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">系统维护通知</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">计划于今晚22:00进行系统升级维护</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-tertiary); margin-top: var(--doubao-space-4);">1小时前</div>
+                    </div>
+                </div>
+                
+                <div class="doubao-flex doubao-items-start doubao-space-x-12" style="padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-success); background-color: rgba(0, 180, 42, 0.05); border-radius: var(--doubao-radius-md);">
+                    <i class="fas fa-check-circle" style="color: var(--doubao-success); margin-top: 2px;"></i>
+                    <div class="flex-1">
+                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">备份任务完成</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">每日数据备份任务执行成功</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-tertiary); margin-top: var(--doubao-space-4);">2小时前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据流量趋势图
+        const dataFlowCtx = document.getElementById('dataFlowChart').getContext('2d');
+        new Chart(dataFlowCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: '数据流量(条/秒)',
+                    data: [800, 600, 1200, 1500, 1800, 1400, 1000],
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            }
+        });
+
+        // API调用统计图
+        const apiCallCtx = document.getElementById('apiCallChart').getContext('2d');
+        new Chart(apiCallCtx, {
+            type: 'bar',
+            data: {
+                labels: ['空气质量', '水质监测', '污染源', '元数据', '数据导出', '其他'],
+                datasets: [{
+                    label: '调用次数',
+                    data: [12500, 8900, 6700, 4200, 3800, 2100],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#06b6d4',
+                        '#10b981',
+                        '#f59e0b',
+                        '#8b5cf6',
+                        '#6b7280'
+                    ],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 模拟实时数据更新
+        setInterval(() => {
+            // 更新统计数字
+            const statValues = document.querySelectorAll('.doubao-stat-value');
+            statValues.forEach(element => {
+                const currentValue = parseFloat(element.textContent);
+                const variation = (Math.random() - 0.5) * 0.1;
+                const newValue = currentValue * (1 + variation);
+                
+                if (element.textContent.includes('K')) {
+                    element.textContent = newValue.toFixed(1) + 'K';
+                } else if (element.textContent.includes('%')) {
+                    element.textContent = Math.min(100, newValue).toFixed(1) + '%';
+                } else {
+                    element.textContent = Math.round(newValue);
+                }
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
