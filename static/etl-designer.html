@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL流程设计器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1'
+                        },
+                        success: {
+                            500: '#10b981',
+                            600: '#059669'
+                        },
+                        warning: {
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        },
+                        danger: {
+                            500: '#ef4444',
+                            600: '#dc2626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .etl-canvas {
+            background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .etl-component {
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+        
+        .etl-component:active {
+            cursor: grabbing;
+        }
+        
+        .etl-component:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .connection-line {
+            stroke: #6b7280;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        
+        .connection-line.active {
+            stroke: #0ea5e9;
+            stroke-width: 3;
+        }
+        
+        .connection-point {
+            cursor: crosshair;
+        }
+        
+        .dragging {
+            z-index: 1000;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); height: 100vh; overflow: hidden;">
+    <div class="doubao-flex doubao-h-full">
+        <!-- 左侧组件面板 - 豆包风格 -->
+        <div class="doubao-sidebar" style="width: 280px;">
+            <!-- 工具栏 -->
+            <div style="padding: var(--doubao-space-16); border-bottom: 1px solid var(--doubao-border);">
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16">
+                    <h2 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">ETL组件库</h2>
+                    <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" title="刷新组件">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- 搜索组件 -->
+                <div class="relative">
+                    <input type="text" placeholder="搜索组件..." 
+                           class="form-input doubao-w-full pl-8 pr-3 py-2 doubao-text-sm">
+                    <i class="fas fa-search absolute left-2.5 top-2.5 doubao-text-sm" style="color: var(--doubao-text-tertiary);"></i>
+                </div>
+            </div>
+            
+            <!-- 组件分类 - 豆包风格 -->
+            <div class="flex-1 overflow-y-auto" style="padding: var(--doubao-space-16);">
+                <!-- 数据源组件 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-database" style="margin-right: var(--doubao-space-8); color: var(--eco-air);"></i>
+                        数据源
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: var(--doubao-space-8);">
+                        <div class="etl-component doubao-card doubao-card-air doubao-animate-fade-in" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="hj212-source">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-broadcast-tower" style="color: var(--eco-air); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">HJ212设备</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">污染源数据接入</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-air doubao-animate-fade-in doubao-animate-delay-100" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="database-source">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-database" style="color: var(--eco-air); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据库输入</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">从数据库读取</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-air doubao-animate-fade-in doubao-animate-delay-200" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="file-source">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-file-csv" style="color: var(--eco-air); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">文件输入</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">CSV/Excel文件</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据转换组件 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-cogs" style="margin-right: var(--doubao-space-8); color: var(--eco-forest);"></i>
+                        数据转换
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: var(--doubao-space-8);">
+                        <div class="etl-component doubao-card doubao-card-forest doubao-animate-fade-in" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="data-clean">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-broom" style="color: var(--eco-forest); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据清洗</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">去重、去空值</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-100" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="data-transform">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-exchange-alt" style="color: var(--eco-forest); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">字段转换</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">类型转换、映射</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-200" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="data-filter">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-filter" style="color: var(--eco-forest); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据筛选</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">条件过滤</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="data-validate">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-check-double" style="color: var(--eco-forest); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据验证</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">质量检查</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数据输出组件 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-upload" style="margin-right: var(--doubao-space-8); color: var(--eco-soil);"></i>
+                        数据输出
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: var(--doubao-space-8);">
+                        <div class="etl-component doubao-card doubao-card-soil doubao-animate-fade-in" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="database-output">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-database" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据库输出</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">写入数据库</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-100" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="api-output">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-cloud" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">API输出</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">发布数据服务</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="etl-component doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200" style="padding: var(--doubao-space-12); cursor: grab;" 
+                             draggable="true" data-component-type="file-output">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-file-export" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">文件输出</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">导出到文件</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 中间设计画布区域 - 豆包风格 -->
+        <div class="flex-1 flex flex-col">
+            <!-- 顶部工具栏 -->
+            <div style="background-color: var(--doubao-bg-container); border-bottom: 1px solid var(--doubao-border); padding: var(--doubao-space-16) var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-16);">
+                        <h1 class="doubao-text-xl doubao-font-semibold" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">环保数据处理流程</h1>
+                        <span class="doubao-text-sm" style="color: var(--doubao-text-tertiary);">未保存</span>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="clearCanvas()">
+                            <i class="fas fa-trash" style="margin-right: var(--doubao-space-4);"></i>清空
+                        </button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" onclick="saveFlow()">
+                            <i class="fas fa-save" style="margin-right: var(--doubao-space-4);"></i>保存
+                        </button>
+                        <button class="doubao-btn doubao-btn-warning doubao-btn-sm" onclick="validateFlow()">
+                            <i class="fas fa-check" style="margin-right: var(--doubao-space-4);"></i>验证
+                        </button>
+                        <button class="doubao-btn doubao-btn-success doubao-btn-sm" onclick="runFlow()">
+                            <i class="fas fa-play" style="margin-right: var(--doubao-space-4);"></i>运行
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 画布区域 -->
+            <div class="flex-1 relative overflow-hidden">
+                <div id="etl-canvas" class="etl-canvas w-full h-full relative" 
+                     ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- SVG用于绘制连接线 -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                                    refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280"/>
+                            </marker>
+                        </defs>
+                        <g id="connections"></g>
+                    </svg>
+                    
+                    <!-- 空状态提示 -->
+                    <div id="empty-state" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="text-center">
+                            <i class="fas fa-project-diagram text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">开始设计您的ETL流程</h3>
+                            <p class="text-gray-500 mb-4">从左侧组件库拖拽组件到画布，构建数据处理流程</p>
+                            <div class="text-sm text-gray-400">
+                                <p>1. 选择数据源组件</p>
+                                <p>2. 添加数据转换步骤</p>
+                                <p>3. 配置数据输出</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧属性配置面板 - 豆包风格 -->
+        <div class="w-80 flex flex-col" style="background-color: var(--doubao-bg-container); border-left: 1px solid var(--doubao-border);">
+            <div style="padding: var(--doubao-space-16); border-bottom: 1px solid var(--doubao-border);">
+                <h2 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">组件配置</h2>
+            </div>
+            
+            <div id="property-panel" class="flex-1 overflow-y-auto" style="padding: var(--doubao-space-16);">
+                <div id="no-selection" class="text-center" style="color: var(--doubao-text-secondary); margin-top: var(--doubao-space-32);">
+                    <i class="fas fa-mouse-pointer doubao-text-4xl doubao-mb-16"></i>
+                    <p>选择画布中的组件进行配置</p>
+                </div>
+                
+                <!-- 组件配置表单将动态插入这里 -->
+                <div id="component-config" class="hidden"></div>
+            </div>
+            
+            <!-- 底部日志面板 -->
+            <div style="border-top: 1px solid var(--doubao-border);">
+                <div style="padding: var(--doubao-space-16);">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-12">
+                        <h3 class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">执行日志</h3>
+                        <button class="doubao-text-xs hover:text-gray-700" style="color: var(--doubao-text-secondary);" onclick="clearLogs()">清空</button>
+                    </div>
+                    <div id="execution-logs" class="bg-gray-900 text-green-400 doubao-text-xs rounded h-32 overflow-y-auto font-mono" style="padding: var(--doubao-space-12);">
+                        <div class="text-gray-500">等待执行...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 运行结果模态框 -->
+    <div id="execution-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h3 class="modal-title">执行结果</h3>
+                <button onclick="closeExecutionModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-lg font-semibold text-gray-900">成功</div>
+                                <div class="text-sm text-gray-500">流程执行完成</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-database text-blue-500 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-lg font-semibold text-gray-900">12,450</div>
+                                <div class="text-sm text-gray-500">处理记录数</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-yellow-500 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-lg font-semibold text-gray-900">2.3秒</div>
+                                <div class="text-sm text-gray-500">执行耗时</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 执行步骤详情 -->
+                <div class="space-y-3">
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">HJ212设备数据读取</div>
+                            <div class="text-sm text-gray-500">读取 8,920 条记录 - 耗时 0.8s</div>
+                        </div>
+                        <span class="tag tag-success">完成</span>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">数据清洗处理</div>
+                            <div class="text-sm text-gray-500">清理 156 条异常记录 - 耗时 0.5s</div>
+                        </div>
+                        <span class="tag tag-success">完成</span>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">数据格式转换</div>
+                            <div class="text-sm text-gray-500">转换 8,764 条记录 - 耗时 0.3s</div>
+                        </div>
+                        <span class="tag tag-success">完成</span>
+                    </div>
+                    
+                    <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900">数据输出到数据库</div>
+                            <div class="text-sm text-gray-500">写入 8,764 条记录 - 耗时 0.7s</div>
+                        </div>
+                        <span class="tag tag-success">完成</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeExecutionModal()" class="btn btn-secondary">关闭</button>
+                <button class="btn btn-primary">查看数据</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedComponent = null;
+        let draggedComponent = null;
+        let componentCounter = 0;
+        let connections = [];
+        
+        // 拖拽相关函数
+        document.querySelectorAll('.etl-component').forEach(component => {
+            component.addEventListener('dragstart', function(e) {
+                draggedComponent = this.dataset.componentType;
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+        });
+        
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        
+        function drop(ev) {
+            ev.preventDefault();
+            if (!draggedComponent) return;
+            
+            const canvas = document.getElementById('etl-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = ev.clientX - rect.left - 75; // 组件宽度的一半
+            const y = ev.clientY - rect.top - 40;  // 组件高度的一半
+            
+            createComponent(draggedComponent, x, y);
+            draggedComponent = null;
+            
+            // 隐藏空状态
+            document.getElementById('empty-state').style.display = 'none';
+        }
+        
+        function createComponent(type, x, y) {
+            componentCounter++;
+            const componentId = `component_${componentCounter}`;
+            
+            const componentConfig = getComponentConfig(type);
+            
+            const componentEl = document.createElement('div');
+            componentEl.id = componentId;
+            componentEl.className = 'absolute bg-white border-2 border-gray-300 rounded-lg p-3 w-36 cursor-pointer shadow-lg hover:shadow-xl transition-all';
+            componentEl.style.left = x + 'px';
+            componentEl.style.top = y + 'px';
+            componentEl.style.zIndex = '10';
+            
+            componentEl.innerHTML = `
+                <div class="flex items-center mb-2">
+                    <i class="${componentConfig.icon} ${componentConfig.color} mr-2"></i>
+                    <div class="text-sm font-medium text-gray-900 truncate">${componentConfig.title}</div>
+                </div>
+                <div class="text-xs text-gray-500 mb-2">${componentConfig.description}</div>
+                <div class="flex justify-between items-center">
+                    <span class="tag ${componentConfig.tagClass}">${componentConfig.tag}</span>
+                    <div class="flex space-x-1">
+                        <div class="connection-point w-2 h-2 bg-gray-400 rounded-full" data-type="input" data-component="${componentId}"></div>
+                        <div class="connection-point w-2 h-2 bg-gray-400 rounded-full" data-type="output" data-component="${componentId}"></div>
+                    </div>
+                </div>
+                <button class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600" onclick="removeComponent('${componentId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            // 添加点击事件
+            componentEl.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectComponent(componentId, type);
+            });
+            
+            // 添加拖拽移动功能
+            makeComponentDraggable(componentEl);
+            
+            document.getElementById('etl-canvas').appendChild(componentEl);
+        }
+        
+        function getComponentConfig(type) {
+            const configs = {
+                'hj212-source': {
+                    title: 'HJ212设备',
+                    description: '污染源数据接入',
+                    icon: 'fas fa-broadcast-tower',
+                    color: 'text-blue-600',
+                    tag: '数据源',
+                    tagClass: 'tag-primary'
+                },
+                'database-source': {
+                    title: '数据库输入',
+                    description: '从数据库读取',
+                    icon: 'fas fa-database',
+                    color: 'text-blue-600',
+                    tag: '数据源',
+                    tagClass: 'tag-primary'
+                },
+                'file-source': {
+                    title: '文件输入',
+                    description: 'CSV/Excel文件',
+                    icon: 'fas fa-file-csv',
+                    color: 'text-blue-600',
+                    tag: '数据源',
+                    tagClass: 'tag-primary'
+                },
+                'data-clean': {
+                    title: '数据清洗',
+                    description: '去重、去空值',
+                    icon: 'fas fa-broom',
+                    color: 'text-green-600',
+                    tag: '转换',
+                    tagClass: 'tag-success'
+                },
+                'data-transform': {
+                    title: '字段转换',
+                    description: '类型转换、映射',
+                    icon: 'fas fa-exchange-alt',
+                    color: 'text-green-600',
+                    tag: '转换',
+                    tagClass: 'tag-success'
+                },
+                'data-filter': {
+                    title: '数据筛选',
+                    description: '条件过滤',
+                    icon: 'fas fa-filter',
+                    color: 'text-green-600',
+                    tag: '转换',
+                    tagClass: 'tag-success'
+                },
+                'data-validate': {
+                    title: '数据验证',
+                    description: '质量检查',
+                    icon: 'fas fa-check-double',
+                    color: 'text-green-600',
+                    tag: '转换',
+                    tagClass: 'tag-success'
+                },
+                'database-output': {
+                    title: '数据库输出',
+                    description: '写入数据库',
+                    icon: 'fas fa-database',
+                    color: 'text-purple-600',
+                    tag: '输出',
+                    tagClass: 'tag-warning'
+                },
+                'api-output': {
+                    title: 'API输出',
+                    description: '发布数据服务',
+                    icon: 'fas fa-cloud',
+                    color: 'text-purple-600',
+                    tag: '输出',
+                    tagClass: 'tag-warning'
+                },
+                'file-output': {
+                    title: '文件输出',
+                    description: '导出到文件',
+                    icon: 'fas fa-file-export',
+                    color: 'text-purple-600',
+                    tag: '输出',
+                    tagClass: 'tag-warning'
+                }
+            };
+            
+            return configs[type] || configs['hj212-source'];
+        }
+        
+        function makeComponentDraggable(element) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            element.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('connection-point')) return;
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialX = parseInt(element.style.left);
+                initialY = parseInt(element.style.top);
+                
+                element.classList.add('dragging');
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                
+                e.preventDefault();
+            });
+            
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                element.style.left = (initialX + dx) + 'px';
+                element.style.top = (initialY + dy) + 'px';
+                
+                // 更新连接线
+                updateConnections();
+            }
+            
+            function handleMouseUp() {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                element.classList.remove('dragging');
+                
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+        }
+        
+        function selectComponent(componentId, type) {
+            // 清除之前的选择
+            const prevSelected = document.querySelector('.border-primary-500');
+            if (prevSelected) {
+                prevSelected.classList.remove('border-primary-500');
+                prevSelected.classList.add('border-gray-300');
+            }
+            
+            // 选中当前组件
+            const component = document.getElementById(componentId);
+            component.classList.remove('border-gray-300');
+            component.classList.add('border-primary-500');
+            
+            selectedComponent = {id: componentId, type: type};
+            
+            // 显示配置面板
+            showComponentConfig(componentId, type);
+        }
+        
+        function showComponentConfig(componentId, type) {
+            document.getElementById('no-selection').style.display = 'none';
+            document.getElementById('component-config').style.display = 'block';
+            
+            const configPanel = document.getElementById('component-config');
+            const config = getComponentConfig(type);
+            
+            configPanel.innerHTML = `
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="${config.icon} ${config.color} mr-2"></i>
+                        ${config.title}
+                    </h3>
+                    <p class="text-sm text-gray-500">${config.description}</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label class="form-label">组件名称</label>
+                        <input type="text" class="form-input" value="${config.title}" placeholder="请输入组件名称">
+                    </div>
+                    
+                    ${getSpecificConfig(type)}
+                    
+                    <div class="form-group">
+                        <label class="form-label">输出字段</label>
+                        <textarea class="form-textarea" rows="3" placeholder="配置输出字段映射...">field1, field2, field3</textarea>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button class="btn btn-primary flex-1" onclick="applyConfig('${componentId}')">
+                            <i class="fas fa-check mr-1"></i>应用配置
+                        </button>
+                        <button class="btn btn-secondary" onclick="testComponent('${componentId}')">
+                            <i class="fas fa-play mr-1"></i>测试
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getSpecificConfig(type) {
+            const specificConfigs = {
+                'hj212-source': `
+                    <div class="form-group">
+                        <label class="form-label">设备IP地址</label>
+                        <input type="text" class="form-input" value="192.168.1.101" placeholder="请输入设备IP地址">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">端口号</label>
+                        <input type="number" class="form-input" value="9001" placeholder="请输入端口号">
+                    </div>
+                `,
+                'database-source': `
+                    <div class="form-group">
+                        <label class="form-label">数据库连接</label>
+                        <select class="form-select">
+                            <option value="water_db">水质监测数据库</option>
+                            <option value="air_db">空气质量数据库</option>
+                            <option value="pollution_db">污染源数据库</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">数据表</label>
+                        <input type="text" class="form-input" value="monitoring_data" placeholder="请输入表名">
+                    </div>
+                `,
+                'data-clean': `
+                    <div class="form-group">
+                        <label class="form-label">清洗规则</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2" checked> 去除重复数据
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2" checked> 去除空值
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2"> 异常值处理
+                            </label>
+                        </div>
+                    </div>
+                `
+            };
+            
+            return specificConfigs[type] || '<div class="text-sm text-gray-500">暂无特定配置项</div>';
+        }
+        
+        function removeComponent(componentId) {
+            const component = document.getElementById(componentId);
+            if (component) {
+                component.remove();
+                
+                // 清除选择状态
+                if (selectedComponent && selectedComponent.id === componentId) {
+                    selectedComponent = null;
+                    document.getElementById('no-selection').style.display = 'block';
+                    document.getElementById('component-config').style.display = 'none';
+                }
+                
+                // 检查是否需要显示空状态
+                checkEmptyState();
+            }
+        }
+        
+        function checkEmptyState() {
+            const components = document.querySelectorAll('#etl-canvas > div[id^="component_"]');
+            if (components.length === 0) {
+                document.getElementById('empty-state').style.display = 'flex';
+            }
+        }
+        
+        function clearCanvas() {
+            if (confirm('确定要清空画布吗？这将删除所有组件。')) {
+                const components = document.querySelectorAll('#etl-canvas > div[id^="component_"]');
+                components.forEach(component => component.remove());
+                
+                selectedComponent = null;
+                document.getElementById('no-selection').style.display = 'block';
+                document.getElementById('component-config').style.display = 'none';
+                document.getElementById('empty-state').style.display = 'flex';
+                
+                // 清空连接线
+                document.getElementById('connections').innerHTML = '';
+                connections = [];
+                
+                addLog('画布已清空');
+            }
+        }
+        
+        function saveFlow() {
+            const components = document.querySelectorAll('#etl-canvas > div[id^="component_"]');
+            if (components.length === 0) {
+                alert('画布为空，无法保存');
+                return;
+            }
+            
+            addLog('正在保存流程...');
+            setTimeout(() => {
+                addLog('流程保存成功', 'success');
+                alert('ETL流程保存成功！');
+            }, 1000);
+        }
+        
+        function validateFlow() {
+            const components = document.querySelectorAll('#etl-canvas > div[id^="component_"]');
+            if (components.length === 0) {
+                alert('画布为空，无法验证');
+                return;
+            }
+            
+            addLog('正在验证流程...');
+            setTimeout(() => {
+                addLog('流程验证通过', 'success');
+                alert('ETL流程验证通过！');
+            }, 1500);
+        }
+        
+        function runFlow() {
+            const components = document.querySelectorAll('#etl-canvas > div[id^="component_"]');
+            if (components.length === 0) {
+                alert('画布为空，无法执行');
+                return;
+            }
+            
+            addLog('开始执行ETL流程...');
+            addLog('正在读取HJ212设备数据...');
+            
+            setTimeout(() => {
+                addLog('数据读取完成，共 8,920 条记录');
+                addLog('正在进行数据清洗...');
+            }, 1000);
+            
+            setTimeout(() => {
+                addLog('数据清洗完成，清理 156 条异常记录');
+                addLog('正在进行数据转换...');
+            }, 2000);
+            
+            setTimeout(() => {
+                addLog('数据转换完成');
+                addLog('正在输出数据到目标数据库...');
+            }, 3000);
+            
+            setTimeout(() => {
+                addLog('ETL流程执行完成', 'success');
+                document.getElementById('execution-modal').classList.remove('hidden');
+            }, 4000);
+        }
+        
+        function applyConfig(componentId) {
+            addLog(`组件 ${componentId} 配置已应用`);
+        }
+        
+        function testComponent(componentId) {
+            addLog(`正在测试组件 ${componentId}...`);
+            setTimeout(() => {
+                addLog(`组件 ${componentId} 测试通过`, 'success');
+            }, 1000);
+        }
+        
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('execution-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-blue-400';
+            
+            const logElement = document.createElement('div');
+            logElement.innerHTML = `<span class="text-gray-500">${timestamp}</span> <span class="${logClass}">${message}</span>`;
+            
+            logsContainer.appendChild(logElement);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('execution-logs').innerHTML = '<div class="text-gray-500">等待执行...</div>';
+        }
+        
+        function closeExecutionModal() {
+            document.getElementById('execution-modal').classList.add('hidden');
+        }
+        
+        function updateConnections() {
+            // 这里可以实现连接线的更新逻辑
+            // 在实际应用中，需要计算组件间的连接线位置
+        }
+        
+        // 点击画布空白处取消选择
+        document.getElementById('etl-canvas').addEventListener('click', function(e) {
+            if (e.target === this) {
+                if (selectedComponent) {
+                    const component = document.getElementById(selectedComponent.id);
+                    if (component) {
+                        component.classList.remove('border-primary-500');
+                        component.classList.add('border-gray-300');
+                    }
+                    
+                    selectedComponent = null;
+                    document.getElementById('no-selection').style.display = 'block';
+                    document.getElementById('component-config').style.display = 'none';
+                }
+            }
+        });
+        
+        // 模态框外部点击关闭
+        document.getElementById('execution-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeExecutionModal();
+            }
+        });
+    </script>
+</body>
+</html>

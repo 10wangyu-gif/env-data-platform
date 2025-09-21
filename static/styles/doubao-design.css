@@ -1,0 +1,552 @@
+/* 豆包风格环保数据平台设计系统 */
+
+/* ===== 豆包色彩系统 ===== */
+:root {
+    /* 主色 - 豆包蓝 */
+    --doubao-primary-50: #E8F3FF;
+    --doubao-primary-100: #BEDAFF;
+    --doubao-primary-200: #94BFFF;
+    --doubao-primary-300: #6AA1FF;
+    --doubao-primary-400: #4080FF;
+    --doubao-primary-500: #165DFF;
+    --doubao-primary-600: #0E42D2;
+    --doubao-primary-700: #072CAB;
+    --doubao-primary-800: #031A7A;
+    --doubao-primary-900: #000F52;
+    
+    /* 中性色 - 豆包精细化灰阶 */
+    --doubao-gray-50: #F7F8FA;
+    --doubao-gray-100: #F2F3F5;
+    --doubao-gray-200: #E5E6EB;
+    --doubao-gray-300: #C9CDD4;
+    --doubao-gray-400: #A9AEB8;
+    --doubao-gray-500: #86909C;
+    --doubao-gray-600: #6B7785;
+    --doubao-gray-700: #4E5969;
+    --doubao-gray-800: #272E3B;
+    --doubao-gray-900: #1D2129;
+    
+    /* 功能色 */
+    --doubao-success: #00B42A;
+    --doubao-warning: #FF7D00;
+    --doubao-danger: #F53F3F;
+    --doubao-info: #165DFF;
+    
+    /* 背景色 */
+    --doubao-bg-page: #FFFFFF;
+    --doubao-bg-container: #FFFFFF;
+    --doubao-bg-divider: #E5E6EB;
+    --doubao-bg-hover: #F7F8FA;
+    --doubao-bg-selected: #E8F3FF;
+    
+    /* 文字色 */
+    --doubao-text-primary: #1D2129;
+    --doubao-text-secondary: #4E5969;
+    --doubao-text-tertiary: #86909C;
+    --doubao-text-inverse: #FFFFFF;
+    --doubao-text-placeholder: #C9CDD4;
+    --doubao-text-link: #165DFF;
+    
+    /* 边框和焦点 */
+    --doubao-border: #E5E6EB;
+    --doubao-focus-ring: #94BFFF;
+    
+    /* 阴影系统 */
+    --doubao-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --doubao-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --doubao-shadow-md: 0 4px 10px rgba(0,0,0,0.08);
+    --doubao-shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+    
+    /* 圆角系统 */
+    --doubao-radius-xs: 4px;
+    --doubao-radius-sm: 6px;
+    --doubao-radius-md: 8px;
+    --doubao-radius-lg: 12px;
+    --doubao-radius-xl: 16px;
+    --doubao-radius-pill: 9999px;
+    
+    /* 间距系统 - 8的倍数 */
+    --doubao-space-0: 0px;
+    --doubao-space-2: 2px;
+    --doubao-space-4: 4px;
+    --doubao-space-6: 6px;
+    --doubao-space-8: 8px;
+    --doubao-space-12: 12px;
+    --doubao-space-16: 16px;
+    --doubao-space-20: 20px;
+    --doubao-space-24: 24px;
+    --doubao-space-28: 28px;
+    --doubao-space-32: 32px;
+    --doubao-space-40: 40px;
+    --doubao-space-48: 48px;
+    --doubao-space-56: 56px;
+    --doubao-space-64: 64px;
+    
+    /* 环保主题色彩 - 结合豆包色系 */
+    --eco-air: #4080FF;      /* 空气 - 豆包蓝400 */
+    --eco-water: #165DFF;    /* 水质 - 豆包主色 */
+    --eco-soil: #FF7D00;     /* 土壤 - 豆包警告色 */
+    --eco-forest: #00B42A;   /* 森林 - 豆包成功色 */
+}
+
+/* ===== 豆包字体系统 ===== */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", "Roboto", "Helvetica", "Arial", "Noto Sans CJK", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--doubao-text-primary);
+    background-color: var(--doubao-bg-page);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 字体尺寸系统 */
+.doubao-text-xs { font-size: 12px; line-height: 1.5; }
+.doubao-text-sm { font-size: 13px; line-height: 1.5; }
+.doubao-text-md { font-size: 14px; line-height: 1.5; }
+.doubao-text-lg { font-size: 16px; line-height: 1.5; }
+.doubao-text-xl { font-size: 18px; line-height: 1.5; }
+.doubao-text-2xl { font-size: 20px; line-height: 1.5; }
+.doubao-text-3xl { font-size: 24px; line-height: 1.2; }
+.doubao-text-4xl { font-size: 28px; line-height: 1.2; }
+
+/* 字重系统 */
+.doubao-font-normal { font-weight: 400; }
+.doubao-font-medium { font-weight: 500; }
+.doubao-font-semibold { font-weight: 600; }
+
+/* ===== 豆包按钮系统 ===== */
+.doubao-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    border-radius: var(--doubao-radius-md);
+    transition: all 120ms cubic-bezier(0.2, 0, 0.2, 1);
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    outline: none;
+}
+
+/* 按钮尺寸 */
+.doubao-btn-sm {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.doubao-btn-md {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 14px;
+}
+
+.doubao-btn-lg {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 16px;
+    border-radius: var(--doubao-radius-lg);
+}
+
+/* 按钮样式 */
+.doubao-btn-primary {
+    background-color: var(--doubao-primary-500);
+    color: var(--doubao-text-inverse);
+    border: 1px solid transparent;
+}
+
+.doubao-btn-primary:hover {
+    background-color: var(--doubao-primary-400);
+}
+
+.doubao-btn-primary:active {
+    background-color: var(--doubao-primary-600);
+}
+
+.doubao-btn-primary:focus-visible {
+    box-shadow: 0 0 0 2px var(--doubao-focus-ring);
+}
+
+.doubao-btn-secondary {
+    background-color: var(--doubao-bg-container);
+    color: var(--doubao-primary-500);
+    border: 1px solid var(--doubao-primary-200);
+}
+
+.doubao-btn-secondary:hover {
+    background-color: var(--doubao-bg-hover);
+    border-color: var(--doubao-primary-300);
+}
+
+.doubao-btn-secondary:active {
+    border-color: var(--doubao-primary-400);
+}
+
+.doubao-btn-ghost {
+    background-color: transparent;
+    color: var(--doubao-text-primary);
+    border: 1px dashed var(--doubao-gray-300);
+}
+
+.doubao-btn-ghost:hover {
+    background-color: var(--doubao-bg-hover);
+    border-style: solid;
+}
+
+.doubao-btn-text {
+    background-color: transparent;
+    color: var(--doubao-primary-500);
+    border: 1px solid transparent;
+}
+
+.doubao-btn-text:hover {
+    background-color: var(--doubao-bg-selected);
+}
+
+/* ===== 豆包卡片系统 ===== */
+.doubao-card {
+    background-color: var(--doubao-bg-container);
+    border-radius: var(--doubao-radius-lg);
+    border: 1px solid var(--doubao-border);
+    box-shadow: var(--doubao-shadow-sm);
+    padding: var(--doubao-space-16);
+    transition: all 200ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.doubao-card:hover {
+    box-shadow: var(--doubao-shadow-md);
+    transform: translateY(-1px);
+}
+
+.doubao-card-header {
+    margin-bottom: var(--doubao-space-16);
+}
+
+.doubao-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--doubao-text-primary);
+    margin-bottom: var(--doubao-space-4);
+}
+
+.doubao-card-subtitle {
+    font-size: 13px;
+    color: var(--doubao-text-secondary);
+}
+
+/* 环保主题卡片 */
+.doubao-card-air {
+    border-left: 4px solid var(--eco-air);
+    background: linear-gradient(135deg, rgba(64, 128, 255, 0.02) 0%, var(--doubao-bg-container) 100%);
+}
+
+.doubao-card-water {
+    border-left: 4px solid var(--eco-water);
+    background: linear-gradient(135deg, rgba(22, 93, 255, 0.02) 0%, var(--doubao-bg-container) 100%);
+}
+
+.doubao-card-soil {
+    border-left: 4px solid var(--eco-soil);
+    background: linear-gradient(135deg, rgba(255, 125, 0, 0.02) 0%, var(--doubao-bg-container) 100%);
+}
+
+.doubao-card-forest {
+    border-left: 4px solid var(--eco-forest);
+    background: linear-gradient(135deg, rgba(0, 180, 42, 0.02) 0%, var(--doubao-bg-container) 100%);
+}
+
+/* ===== 豆包标签系统 ===== */
+.doubao-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: var(--doubao-radius-pill);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.doubao-tag-sm {
+    height: 20px;
+    padding: 0 6px;
+    font-size: 11px;
+}
+
+/* 标签样式 */
+.doubao-tag-default {
+    background-color: var(--doubao-bg-hover);
+    color: var(--doubao-text-secondary);
+}
+
+.doubao-tag-info {
+    background-color: var(--doubao-primary-50);
+    color: var(--doubao-primary-600);
+}
+
+.doubao-tag-success {
+    background-color: #E8FFEA;
+    color: var(--doubao-success);
+}
+
+.doubao-tag-warning {
+    background-color: #FFF3E8;
+    color: var(--doubao-warning);
+}
+
+.doubao-tag-danger {
+    background-color: #FFECE8;
+    color: var(--doubao-danger);
+}
+
+/* ===== 豆包统计卡片 ===== */
+.doubao-stat-card {
+    background-color: var(--doubao-bg-container);
+    border-radius: var(--doubao-radius-lg);
+    border: 1px solid var(--doubao-border);
+    box-shadow: var(--doubao-shadow-sm);
+    padding: var(--doubao-space-20);
+    transition: all 200ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.doubao-stat-card:hover {
+    box-shadow: var(--doubao-shadow-md);
+    transform: translateY(-2px);
+}
+
+.doubao-stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: var(--doubao-space-4);
+}
+
+.doubao-stat-label {
+    font-size: 14px;
+    color: var(--doubao-text-secondary);
+    margin-bottom: var(--doubao-space-8);
+}
+
+.doubao-stat-change {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.doubao-stat-change.positive {
+    color: var(--doubao-success);
+}
+
+.doubao-stat-change.negative {
+    color: var(--doubao-danger);
+}
+
+.doubao-stat-change.neutral {
+    color: var(--doubao-text-tertiary);
+}
+
+/* ===== 豆包图标系统 ===== */
+.doubao-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--doubao-radius-lg);
+    font-size: 20px;
+    color: white;
+}
+
+.doubao-icon-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+}
+
+.doubao-icon-air {
+    background: linear-gradient(135deg, var(--eco-air) 0%, #3366FF 100%);
+}
+
+.doubao-icon-water {
+    background: linear-gradient(135deg, var(--eco-water) 0%, #0E42D2 100%);
+}
+
+.doubao-icon-soil {
+    background: linear-gradient(135deg, var(--eco-soil) 0%, #FF6B00 100%);
+}
+
+.doubao-icon-forest {
+    background: linear-gradient(135deg, var(--eco-forest) 0%, #009922 100%);
+}
+
+/* ===== 豆包进度条系统 ===== */
+.doubao-progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--doubao-gray-200);
+    border-radius: var(--doubao-radius-pill);
+    overflow: hidden;
+}
+
+.doubao-progress-bar {
+    height: 100%;
+    border-radius: var(--doubao-radius-pill);
+    transition: width 300ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.doubao-progress-primary {
+    background: linear-gradient(90deg, var(--doubao-primary-400) 0%, var(--doubao-primary-600) 100%);
+}
+
+.doubao-progress-success {
+    background: linear-gradient(90deg, #00B42A 0%, #009922 100%);
+}
+
+.doubao-progress-warning {
+    background: linear-gradient(90deg, #FF7D00 0%, #FF6B00 100%);
+}
+
+/* ===== 豆包侧边栏系统 ===== */
+.doubao-sidebar {
+    width: 224px;
+    background-color: var(--doubao-bg-container);
+    border-right: 1px solid var(--doubao-border);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.doubao-nav-item {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    margin: 2px 8px;
+    border-radius: var(--doubao-radius-md);
+    color: var(--doubao-text-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 120ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.doubao-nav-item:hover {
+    background-color: var(--doubao-bg-hover);
+}
+
+.doubao-nav-item.active {
+    background-color: var(--doubao-bg-selected);
+    color: var(--doubao-primary-600);
+}
+
+.doubao-nav-item i {
+    color: var(--doubao-text-tertiary);
+    margin-right: 8px;
+    width: 16px;
+}
+
+.doubao-nav-item.active i {
+    color: var(--doubao-primary-500);
+}
+
+/* ===== 豆包顶部栏系统 ===== */
+.doubao-header {
+    height: 56px;
+    background-color: var(--doubao-bg-container);
+    border-bottom: 1px solid var(--doubao-border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--doubao-space-16);
+}
+
+/* ===== 豆包布局系统 ===== */
+.doubao-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--doubao-space-24);
+}
+
+.doubao-grid {
+    display: grid;
+    gap: var(--doubao-space-24);
+}
+
+.doubao-grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.doubao-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.doubao-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.doubao-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* 响应式 */
+@media (max-width: 960px) {
+    .doubao-grid-cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .doubao-grid-cols-3,
+    .doubao-grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    
+    .doubao-container {
+        padding: 0 var(--doubao-space-16);
+    }
+    
+    .doubao-grid {
+        gap: var(--doubao-space-16);
+    }
+}
+
+/* ===== 豆包动画系统 ===== */
+@keyframes doubao-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.doubao-animate-fade-in {
+    animation: doubao-fade-in 300ms cubic-bezier(0.2, 0, 0.2, 1) forwards;
+}
+
+/* 延迟动画 */
+.doubao-animate-delay-100 { animation-delay: 100ms; }
+.doubao-animate-delay-200 { animation-delay: 200ms; }
+.doubao-animate-delay-300 { animation-delay: 300ms; }
+.doubao-animate-delay-400 { animation-delay: 400ms; }
+.doubao-animate-delay-500 { animation-delay: 500ms; }
+.doubao-animate-delay-600 { animation-delay: 600ms; }
+.doubao-animate-delay-700 { animation-delay: 700ms; }
+.doubao-animate-delay-800 { animation-delay: 800ms; }
+.doubao-animate-delay-900 { animation-delay: 900ms; }
+.doubao-animate-delay-1000 { animation-delay: 1000ms; }
+
+/* ===== 工具类 ===== */
+.doubao-text-center { text-align: center; }
+.doubao-flex { display: flex; }
+.doubao-items-center { align-items: center; }
+.doubao-justify-between { justify-content: space-between; }
+.doubao-space-x-4 > * + * { margin-left: var(--doubao-space-4); }
+.doubao-space-x-8 > * + * { margin-left: var(--doubao-space-8); }
+.doubao-space-x-12 > * + * { margin-left: var(--doubao-space-12); }
+.doubao-space-y-4 > * + * { margin-top: var(--doubao-space-4); }
+.doubao-space-y-8 > * + * { margin-top: var(--doubao-space-8); }
+.doubao-space-y-12 > * + * { margin-top: var(--doubao-space-12); }
+.doubao-space-y-16 > * + * { margin-top: var(--doubao-space-16); }
+
+.doubao-mb-4 { margin-bottom: var(--doubao-space-4); }
+.doubao-mb-8 { margin-bottom: var(--doubao-space-8); }
+.doubao-mb-16 { margin-bottom: var(--doubao-space-16); }
+.doubao-mb-24 { margin-bottom: var(--doubao-space-24); }
+
+.doubao-w-full { width: 100%; }
+.doubao-h-full { height: 100%; }

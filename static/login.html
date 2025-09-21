@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环保数据集成平台 - 登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .login-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 45px 12px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .input-group .icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .error-message {
+            display: none;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .loading {
+            display: none;
+        }
+        .loading .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="login-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-6xl flex flex-col lg:flex-row items-center gap-8">
+        <!-- 左侧：系统介绍 -->
+        <div class="flex-1 text-white space-y-8">
+            <div class="text-center lg:text-left">
+                <h1 class="text-4xl lg:text-5xl font-bold mb-4">
+                    <i class="fas fa-leaf text-green-400 mr-3"></i>
+                    环保数据集成平台
+                </h1>
+                <p class="text-xl text-blue-100 mb-8">
+                    统一管理环保监测数据，助力绿色发展决策
+                </p>
+            </div>
+
+            <!-- 功能特色 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-database text-blue-300 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">数据源管理</h3>
+                    </div>
+                    <p class="text-blue-100 text-sm">支持HJ212协议、数据库、API等多种数据源接入</p>
+                </div>
+
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-cogs text-green-300 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">ETL作业</h3>
+                    </div>
+                    <p class="text-blue-100 text-sm">可视化ETL流程设计，自动化数据处理</p>
+                </div>
+
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-shield-alt text-yellow-300 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">数据质量</h3>
+                    </div>
+                    <p class="text-blue-100 text-sm">智能数据质量检查，确保数据准确性</p>
+                </div>
+
+                <div class="feature-card p-6 rounded-xl">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-chart-line text-purple-300 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">实时监控</h3>
+                    </div>
+                    <p class="text-blue-100 text-sm">实时数据监控，异常告警及时响应</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：登录表单 -->
+        <div class="w-full lg:w-96">
+            <div class="glass-effect rounded-2xl p-8 shadow-2xl">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-2">登录系统</h2>
+                    <p class="text-blue-100">请输入您的凭据以访问平台</p>
+                </div>
+
+                <!-- 错误提示 -->
+                <div id="errorMessage" class="error-message">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="用户名"
+                            required
+                            autocomplete="username"
+                        >
+                        <i class="fas fa-user icon"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="密码"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <i class="fas fa-lock icon"></i>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6">
+                        <label class="flex items-center text-white text-sm">
+                            <input type="checkbox" id="remember" class="mr-2 rounded">
+                            记住我
+                        </label>
+                        <a href="#" class="text-blue-200 hover:text-white text-sm">忘记密码？</a>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn-login w-full py-3 px-4 rounded-lg text-white font-semibold text-lg shadow-lg"
+                        id="loginButton"
+                    >
+                        <span class="flex items-center justify-center">
+                            <span class="loading">
+                                <div class="spinner"></div>
+                            </span>
+                            <span id="buttonText">登录</span>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- 演示账户 -->
+                <div class="mt-6 p-4 bg-white bg-opacity-10 rounded-lg">
+                    <h4 class="text-white text-sm font-semibold mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>演示账户
+                    </h4>
+                    <div class="text-blue-100 text-xs space-y-1">
+                        <div>管理员: admin / Admin@123</div>
+                        <div>操作员: operator / Operator@123</div>
+                        <div>查看者: viewer / Viewer@123</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE_URL = 'http://localhost:8888/api/v1';
+
+        // DOM元素
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const buttonText = document.getElementById('buttonText');
+        const loading = document.querySelector('.loading');
+
+        // 检查是否已登录
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // 验证token是否有效
+                fetch(`${API_BASE_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Token有效，跳转到主页
+                        window.location.href = '/static/dashboard.html';
+                    } else {
+                        // Token无效，清除
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                    }
+                })
+                .catch(error => {
+                    console.error('验证token失败:', error);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                });
+            }
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // 设置加载状态
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loading.style.display = 'flex';
+                buttonText.textContent = '登录中...';
+                loginButton.disabled = true;
+                loginButton.style.opacity = '0.7';
+            } else {
+                loading.style.display = 'none';
+                buttonText.textContent = '登录';
+                loginButton.disabled = false;
+                loginButton.style.opacity = '1';
+            }
+        }
+
+        // 登录处理
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username || !password) {
+                showError('请输入用户名和密码');
+                return;
+            }
+
+            setLoading(true);
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.code === 200) {
+                    // 登录成功
+                    const { token, user } = data.data;
+
+                    // 保存token和用户信息
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+
+                    // 记住我功能
+                    const rememberMe = document.getElementById('remember').checked;
+                    if (rememberMe) {
+                        localStorage.setItem('rememberedUsername', username);
+                    } else {
+                        localStorage.removeItem('rememberedUsername');
+                    }
+
+                    // 跳转到主页
+                    window.location.href = '/static/dashboard.html';
+                } else {
+                    // 登录失败
+                    showError(data.message || '登录失败，请检查用户名和密码');
+                }
+            } catch (error) {
+                console.error('登录请求失败:', error);
+                showError('网络错误，请检查服务器连接');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 恢复记住的用户名
+        function restoreRememberedUsername() {
+            const rememberedUsername = localStorage.getItem('rememberedUsername');
+            if (rememberedUsername) {
+                usernameInput.value = rememberedUsername;
+                document.getElementById('remember').checked = true;
+            }
+        }
+
+        // 快速填充演示账户
+        function fillDemoAccount(username, password) {
+            usernameInput.value = username;
+            passwordInput.value = password;
+        }
+
+        // 事件绑定
+        loginForm.addEventListener('submit', handleLogin);
+
+        // 演示账户点击事件
+        document.querySelectorAll('.text-blue-100.text-xs div').forEach((div, index) => {
+            div.style.cursor = 'pointer';
+            div.addEventListener('click', () => {
+                const accounts = [
+                    ['admin', 'Admin@123'],
+                    ['operator', 'Operator@123'],
+                    ['viewer', 'Viewer@123']
+                ];
+                if (accounts[index]) {
+                    fillDemoAccount(accounts[index][0], accounts[index][1]);
+                }
+            });
+        });
+
+        // 键盘事件
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && (usernameInput === document.activeElement || passwordInput === document.activeElement)) {
+                handleLogin(event);
+            }
+        });
+
+        // 页面加载时检查登录状态和恢复用户名
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+            restoreRememberedUsername();
+        });
+    </script>
+</body>
+</html>

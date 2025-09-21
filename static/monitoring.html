@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控告警</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+    <style>
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 页面头部 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in">
+        <div class="doubao-flex doubao-items-center doubao-justify-between">
+            <div>
+                <h1 class="doubao-text-4xl doubao-font-semibold doubao-mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">监控告警</h1>
+                <p class="doubao-text-lg" style="color: var(--doubao-text-secondary);">实时监控系统运行状态，及时发现和处理异常情况</p>
+            </div>
+            <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                <select class="form-select doubao-text-sm" style="width: 120px;">
+                    <option value="5">5分钟刷新</option>
+                    <option value="10">10分钟刷新</option>
+                    <option value="30">30分钟刷新</option>
+                </select>
+                <button class="doubao-btn doubao-btn-secondary doubao-btn-lg">
+                    <i class="fas fa-sync-alt" style="margin-right: var(--doubao-space-8);"></i>
+                    手动刷新
+                </button>
+                <button class="doubao-btn doubao-btn-primary doubao-btn-lg" onclick="openAlertSettingModal()">
+                    <i class="fas fa-cog" style="margin-right: var(--doubao-space-8);"></i>
+                    告警设置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统状态概览 - 豆包风格 -->
+    <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-4 doubao-mb-24" style="gap: var(--doubao-space-24);">
+        <!-- 系统健康度 -->
+        <div class="doubao-stat-card doubao-card-forest doubao-animate-fade-in">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-forest);">98.5%</div>
+                    <div class="doubao-stat-label">系统健康度</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-check text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        运行正常
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 活跃告警 -->
+        <div class="doubao-stat-card doubao-animate-fade-in doubao-animate-delay-100" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid var(--doubao-danger);">
+            <div class="doubao-flex doubao-items-center">
+                <div class="pulse-dot" style="width: 48px; height: 48px; background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); color: var(--doubao-danger); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-exclamation-triangle doubao-text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--doubao-danger);">3</div>
+                    <div class="doubao-stat-label">活跃告警</div>
+                    <div class="doubao-stat-change negative">
+                        <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        +1 较1小时前
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据延迟 -->
+        <div class="doubao-stat-card doubao-animate-fade-in doubao-animate-delay-200" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left: 4px solid var(--doubao-warning);">
+            <div class="doubao-flex doubao-items-center">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); color: var(--doubao-warning); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-clock doubao-text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--doubao-warning);">2.3s</div>
+                    <div class="doubao-stat-label">平均数据延迟</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-arrow-down text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        -0.5s 较昨日
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 服务可用性 -->
+        <div class="doubao-stat-card doubao-card-air doubao-animate-fade-in doubao-animate-delay-300">
+            <div class="doubao-flex doubao-items-center">
+                <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="doubao-stat-value" style="color: var(--eco-air);">99.9%</div>
+                    <div class="doubao-stat-label">服务可用性</div>
+                    <div class="doubao-stat-change positive">
+                        <i class="fas fa-check text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                        7天内
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 实时告警和监控图表 - 豆包风格 -->
+    <div class="doubao-grid doubao-grid-cols-1 lg:grid-cols-2 doubao-mb-24" style="gap: var(--doubao-space-24);">
+        <!-- 实时告警列表 -->
+        <div class="doubao-card doubao-animate-fade-in">
+            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">实时告警</h3>
+                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                    <button class="doubao-tag" style="background: #fef2f2; color: var(--doubao-danger); border: 1px solid #fecaca;">严重</button>
+                    <button class="doubao-tag" style="background: #fffbeb; color: var(--doubao-warning); border: 1px solid #fed7aa;">警告</button>
+                    <button class="doubao-tag" style="background: #eff6ff; color: var(--doubao-primary-500); border: 1px solid #dbeafe;">信息</button>
+                </div>
+            </div>
+            <div class="h-80 overflow-y-auto" style="padding: var(--doubao-space-16);">
+                <div style="display: flex; flex-direction: column; gap: var(--doubao-space-12);">
+                    <!-- 严重告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-danger); background-color: #fef2f2; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full pulse-dot" style="background-color: var(--doubao-danger);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">数据源连接中断</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">2分钟前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">HJ212设备 (192.168.1.105) 连接异常，数据传输中断</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-sm" style="background-color: var(--doubao-danger); color: white; border: none;">
+                                    立即处理
+                                </button>
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 警告告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-warning); background-color: #fffbeb; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-warning);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">数据质量异常</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">15分钟前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">空气质量数据存在异常值，PM2.5 > 500μg/m³</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-sm" style="background-color: var(--doubao-warning); color: white; border: none;">
+                                    标记处理
+                                </button>
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 严重告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-danger); background-color: #fef2f2; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full pulse-dot" style="background-color: var(--doubao-danger);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">ETL任务执行失败</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">32分钟前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">数据清洗任务执行失败，错误码：DB_CONNECTION_TIMEOUT</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-sm" style="background-color: var(--doubao-danger); color: white; border: none;">
+                                    重新执行
+                                </button>
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">
+                                    查看日志
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 信息告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-primary-500); background-color: #eff6ff; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-primary-500);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">系统维护通知</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">1小时前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">计划于今晚22:00-24:00进行系统升级维护</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-sm" style="background-color: var(--doubao-primary-500); color: white; border: none;">
+                                    已知悉
+                                </button>
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">
+                                    详细计划
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 警告告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-warning); background-color: #fffbeb; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-warning);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">磁盘空间不足</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">2小时前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">数据存储服务器磁盘使用率达到85%，请及时清理</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-sm" style="background-color: var(--doubao-warning); color: white; border: none;">
+                                    清理数据
+                                </button>
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">
+                                    查看使用情况
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 成功告警 -->
+                    <div class="doubao-flex doubao-items-start" style="gap: var(--doubao-space-12); padding: var(--doubao-space-12); border-left: 4px solid var(--doubao-success); background-color: #f0fdf4; border-radius: 0 var(--doubao-radius-lg) var(--doubao-radius-lg) 0;">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-success);"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <p class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">备份任务完成</p>
+                                <span class="doubao-text-xs" style="color: var(--doubao-text-secondary);">6小时前</span>
+                            </div>
+                            <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">每日数据备份任务成功完成，备份文件大小：2.3GB</p>
+                            <div style="margin-top: var(--doubao-space-8); display: flex; gap: var(--doubao-space-8);">
+                                <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-success);">
+                                    查看备份
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统性能监控 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-100">
+            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">系统性能监控</h3>
+                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                    <button class="doubao-btn doubao-btn-primary doubao-btn-sm">CPU</button>
+                    <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">内存</button>
+                    <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">网络</button>
+                    <button class="doubao-btn doubao-btn-ghost doubao-btn-sm" style="color: var(--doubao-text-secondary);">存储</button>
+                </div>
+            </div>
+            <div class="h-80" style="padding: var(--doubao-space-24);">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 服务监控和数据质量 -->
+    <div class="doubao-grid doubao-grid-cols-1 lg:grid-cols-2 doubao-mb-24" style="gap: var(--doubao-space-24);">
+        <!-- 服务状态监控 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-200">
+            <div style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">服务状态监控</h3>
+                <p class="doubao-text-sm doubao-mb-16" style="color: var(--doubao-text-secondary);">各服务模块运行状态</p>
+            </div>
+            <div style="padding: var(--doubao-space-16) var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24); display: flex; flex-direction: column; gap: var(--doubao-space-16);">
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-success); margin-right: var(--doubao-space-12);"></div>
+                        <div>
+                            <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据接入服务</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">24个数据源正常连接</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">正常</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">99.8%</div>
+                    </div>
+                </div>
+
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-success); margin-right: var(--doubao-space-12);"></div>
+                        <div>
+                            <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">ETL处理服务</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">15个任务正在执行</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">正常</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">98.5%</div>
+                    </div>
+                </div>
+
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="padding: var(--doubao-space-16); background-color: #fffbeb; border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-warning); margin-right: var(--doubao-space-12);"></div>
+                        <div>
+                            <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">API网关服务</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">响应时间略高</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-warning);">警告</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">97.2%</div>
+                    </div>
+                </div>
+
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-success); margin-right: var(--doubao-space-12);"></div>
+                        <div>
+                            <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">数据存储服务</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">集群运行稳定</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-success);">正常</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">99.9%</div>
+                    </div>
+                </div>
+
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="padding: var(--doubao-space-16); background-color: #fef2f2; border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="w-3 h-3 rounded-full pulse-dot" style="background-color: var(--doubao-danger); margin-right: var(--doubao-space-12);"></div>
+                        <div>
+                            <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">消息队列服务</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">部分节点离线</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-danger);">异常</div>
+                        <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">94.1%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据质量监控 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-300">
+            <div style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">数据质量监控</h3>
+                <p class="doubao-text-sm doubao-mb-16" style="color: var(--doubao-text-secondary);">实时数据质量评估</p>
+            </div>
+            <div style="padding: var(--doubao-space-16) var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24); display: flex; flex-direction: column; gap: var(--doubao-space-16);">
+                <!-- 整体质量得分 -->
+                <div style="text-align: center; padding: var(--doubao-space-24); background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border-radius: var(--doubao-radius-lg);">
+                    <div class="doubao-text-4xl doubao-font-bold doubao-mb-8" style="color: var(--doubao-success);">94.2%</div>
+                    <div style="color: var(--doubao-text-primary);">整体数据质量得分</div>
+                    <div class="doubao-text-sm" style="color: var(--doubao-success); margin-top: var(--doubao-space-4);">较昨日 +1.2%</div>
+                </div>
+
+                <!-- 质量维度详情 -->
+                <div class="doubao-grid doubao-grid-cols-2" style="gap: var(--doubao-space-16);">
+                    <div style="text-align: center; padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                        <div class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-success);">98.5%</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">完整性</div>
+                        <div style="width: 100%; height: 8px; background-color: var(--doubao-bg-page); border-radius: var(--doubao-radius-full); margin-top: var(--doubao-space-8);">
+                            <div style="width: 98.5%; height: 8px; background-color: var(--doubao-success); border-radius: var(--doubao-radius-full);"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                        <div class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-success);">96.8%</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">准确性</div>
+                        <div style="width: 100%; height: 8px; background-color: var(--doubao-bg-page); border-radius: var(--doubao-radius-full); margin-top: var(--doubao-space-8);">
+                            <div style="width: 96.8%; height: 8px; background-color: var(--doubao-success); border-radius: var(--doubao-radius-full);"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: var(--doubao-space-16); background-color: #fffbeb; border-radius: var(--doubao-radius-lg);">
+                        <div class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-warning);">91.3%</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">一致性</div>
+                        <div style="width: 100%; height: 8px; background-color: var(--doubao-bg-page); border-radius: var(--doubao-radius-full); margin-top: var(--doubao-space-8);">
+                            <div style="width: 91.3%; height: 8px; background-color: var(--doubao-warning); border-radius: var(--doubao-radius-full);"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: var(--doubao-space-16); background-color: #f0fdf4; border-radius: var(--doubao-radius-lg);">
+                        <div class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-success);">97.9%</div>
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">时效性</div>
+                        <div style="width: 100%; height: 8px; background-color: var(--doubao-bg-page); border-radius: var(--doubao-radius-full); margin-top: var(--doubao-space-8);">
+                            <div style="width: 97.9%; height: 8px; background-color: var(--doubao-success); border-radius: var(--doubao-radius-full);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 告警统计和历史趋势 -->
+    <div class="doubao-grid doubao-grid-cols-1 lg:grid-cols-3" style="gap: var(--doubao-space-24);">
+        <!-- 告警统计 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-400">
+            <div style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">告警统计</h3>
+                <p class="doubao-text-sm doubao-mb-16" style="color: var(--doubao-text-secondary);">近7天告警分布</p>
+            </div>
+            <div class="h-64" style="padding: var(--doubao-space-24);">
+                <canvas id="alertStatsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 响应时间趋势 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-500">
+            <div style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">响应时间趋势</h3>
+                <p class="doubao-text-sm doubao-mb-16" style="color: var(--doubao-text-secondary);">API平均响应时间</p>
+            </div>
+            <div class="h-64" style="padding: var(--doubao-space-24);">
+                <canvas id="responseTimeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 数据流量监控 -->
+        <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-600">
+            <div style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">数据流量监控</h3>
+                <p class="doubao-text-sm doubao-mb-16" style="color: var(--doubao-text-secondary);">实时数据接入量</p>
+            </div>
+            <div class="h-64" style="padding: var(--doubao-space-24);">
+                <canvas id="dataFlowChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 告警设置模态框 -->
+    <div id="alertSettingModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h3 class="modal-title">告警设置</h3>
+                <button onclick="closeAlertSettingModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 告警规则配置 -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">告警规则</h4>
+                            <div class="space-y-4">
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" checked>
+                                            <span class="font-medium">数据源连接异常</span>
+                                        </label>
+                                        <span class="tag tag-danger">严重</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-3">
+                                        当数据源连接中断超过5分钟时触发告警
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs text-gray-500">阈值时间</label>
+                                            <input type="number" class="form-input text-sm" value="5">
+                                        </div>
+                                        <div>
+                                            <label class="text-xs text-gray-500">单位</label>
+                                            <select class="form-select text-sm">
+                                                <option>分钟</option>
+                                                <option>秒</option>
+                                                <option>小时</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" checked>
+                                            <span class="font-medium">CPU使用率过高</span>
+                                        </label>
+                                        <span class="tag tag-warning">警告</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-3">
+                                        当CPU使用率超过80%持续5分钟时触发告警
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs text-gray-500">阈值(%)</label>
+                                            <input type="number" class="form-input text-sm" value="80">
+                                        </div>
+                                        <div>
+                                            <label class="text-xs text-gray-500">持续时间</label>
+                                            <input type="number" class="form-input text-sm" value="5">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2">
+                                            <span class="font-medium">API响应时间异常</span>
+                                        </label>
+                                        <span class="tag tag-warning">警告</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-3">
+                                        当API平均响应时间超过2000ms时触发告警
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-xs text-gray-500">阈值(ms)</label>
+                                            <input type="number" class="form-input text-sm" value="2000">
+                                        </div>
+                                        <div>
+                                            <label class="text-xs text-gray-500">检查间隔</label>
+                                            <input type="number" class="form-input text-sm" value="60">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 通知设置 -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">通知设置</h4>
+                            <div class="space-y-4">
+                                <div class="border rounded-lg p-4">
+                                    <h5 class="font-medium text-gray-900 mb-3">通知方式</h5>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" checked>
+                                            <span>邮件通知</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" checked>
+                                            <span>短信通知</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2">
+                                            <span>企业微信</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2">
+                                            <span>钉钉机器人</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded-lg p-4">
+                                    <h5 class="font-medium text-gray-900 mb-3">通知对象</h5>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="form-label text-sm">邮件地址</label>
+                                            <textarea class="form-textarea text-sm" rows="2" placeholder="admin@example.com&#10;ops@example.com">admin@example.com
+ops@example.com</textarea>
+                                        </div>
+                                        <div>
+                                            <label class="form-label text-sm">手机号码</label>
+                                            <textarea class="form-textarea text-sm" rows="2" placeholder="13800138000&#10;13900139000">13800138000
+13900139000</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded-lg p-4">
+                                    <h5 class="font-medium text-gray-900 mb-3">通知策略</h5>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="form-label text-sm">通知间隔</label>
+                                            <select class="form-select text-sm">
+                                                <option>立即通知</option>
+                                                <option>5分钟</option>
+                                                <option>15分钟</option>
+                                                <option>30分钟</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label text-sm">最大重试</label>
+                                            <select class="form-select text-sm">
+                                                <option>1次</option>
+                                                <option>3次</option>
+                                                <option>5次</option>
+                                                <option>不限制</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeAlertSettingModal()" class="btn btn-secondary">取消</button>
+                <button onclick="testNotification()" class="btn btn-warning">测试通知</button>
+                <button onclick="saveAlertSettings()" class="btn btn-primary">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 系统性能监控图表
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 20}, (_, i) => `${14 + Math.floor(i/4)}:${(i%4)*15}${(i%4)*15 === 0 ? '0' : ''}`),
+                datasets: [{
+                    label: 'CPU使用率(%)',
+                    data: [45, 52, 48, 55, 62, 58, 65, 78, 72, 68, 75, 82, 88, 85, 79, 73, 69, 64, 58, 52],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 告警统计图表
+        const alertStatsCtx = document.getElementById('alertStatsChart').getContext('2d');
+        new Chart(alertStatsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['严重', '警告', '信息', '已处理'],
+                datasets: [{
+                    data: [3, 8, 12, 45],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b',
+                        '#3b82f6',
+                        '#10b981'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // 响应时间趋势图表
+        const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+        new Chart(responseTimeCtx, {
+            type: 'line',
+            data: {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                datasets: [{
+                    label: '响应时间(ms)',
+                    data: [45, 52, 48, 55, 62, 58, 52],
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 数据流量监控图表
+        const dataFlowCtx = document.getElementById('dataFlowChart').getContext('2d');
+        new Chart(dataFlowCtx, {
+            type: 'bar',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: '数据量(MB)',
+                    data: [120, 95, 180, 220, 250, 190, 150],
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 打开告警设置模态框
+        function openAlertSettingModal() {
+            document.getElementById('alertSettingModal').classList.remove('hidden');
+        }
+
+        // 关闭告警设置模态框
+        function closeAlertSettingModal() {
+            document.getElementById('alertSettingModal').classList.add('hidden');
+        }
+
+        // 保存告警设置
+        function saveAlertSettings() {
+            alert('告警设置保存成功！');
+            closeAlertSettingModal();
+        }
+
+        // 测试通知
+        function testNotification() {
+            alert('测试通知已发送，请检查邮箱和手机！');
+        }
+
+        // 模态框外部点击关闭
+        document.getElementById('alertSettingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAlertSettingModal();
+            }
+        });
+
+        // 模拟实时数据更新
+        setInterval(() => {
+            // 更新活跃告警数量
+            const alertCount = document.querySelector('.pulse-dot').closest('.stat-card').querySelector('.stat-value');
+            const currentCount = parseInt(alertCount.textContent);
+            const newCount = Math.max(0, currentCount + Math.floor(Math.random() * 3) - 1);
+            alertCount.textContent = newCount;
+            
+            // 更新系统健康度
+            const healthScore = document.querySelector('.stat-value.text-green-600');
+            const currentScore = parseFloat(healthScore.textContent);
+            const newScore = Math.max(95, Math.min(100, currentScore + (Math.random() - 0.5) * 2));
+            healthScore.textContent = newScore.toFixed(1) + '%';
+        }, 30000); // 30秒更新一次
+    </script>
+</body>
+</html>

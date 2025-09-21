@@ -1,0 +1,120 @@
+# 环保数据集成平台配置文件
+
+app:
+  name: "env-data-platform"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30
+  write_timeout: 30
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+
+database:
+  driver: "mysql"
+  host: "localhost"
+  port: 3306
+  database: "env_data_platform"
+  username: "root"
+  password: "Env@2024#Secure"
+  charset: "utf8mb4"
+  parse_time: true
+  loc: "Asia%2FShanghai"
+  pool:
+    max_idle: 10
+    max_open: 100
+    max_lifetime: 3600
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  database: 0
+  pool_size: 10
+
+jwt:
+  secret: "env-data-platform-jwt-secret-key-change-in-production"
+  expire_time: 86400  # 24小时
+  issuer: "env-data-platform"
+
+log:
+  level: "info"
+  format: "json"
+  output: "stdout"
+  filename: "logs/app.log"
+  max_size: 100       # MB
+  max_backups: 3
+  max_age: 28         # days
+  compress: true
+
+monitor:
+  enabled: true
+  host: "0.0.0.0"
+  port: 9090
+  path: "/health"
+  prometheus:
+    enabled: true
+    path: "/metrics"
+
+etl:
+  hop_server:
+    host: "localhost"
+    port: 8181
+    username: "admin"
+    password: "admin"
+  pipeline:
+    base_path: "./pipelines"
+    temp_path: "./temp"
+    max_parallel: 5
+
+# HJ212协议配置
+hj212:
+  server:
+    host: "0.0.0.0"
+    port: 9212
+    buffer_size: 4096
+    timeout: 30
+  validation:
+    enabled: true
+    strict_mode: false
+  storage:
+    batch_size: 100
+    flush_interval: 5  # 秒
+
+# API网关配置
+gateway:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8081
+  rate_limit:
+    enabled: true
+    requests_per_second: 100
+    burst: 200
+  cors:
+    enabled: true
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_headers: ["*"]
+
+# 文件上传配置
+upload:
+  max_size: 104857600  # 100MB
+  allowed_types: [".xlsx", ".xls", ".csv", ".json", ".xml"]
+  upload_path: "./uploads"
+  temp_path: "./temp"
+
+# 数据质量配置
+quality:
+  enabled: true
+  batch_size: 1000
+  parallel_workers: 4
+  rules:
+    completeness_threshold: 0.95
+    accuracy_threshold: 0.90
+    consistency_threshold: 0.85

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环保数据集成平台 - 智慧生态数据中台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+</head>
+<body style="background-color: var(--ant-gray-2); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <div class="flex h-screen overflow-hidden">
+        <!-- 左侧导航栏 - 豆包风格 -->
+        <aside class="doubao-sidebar">
+            <!-- Logo区域 -->
+            <div class="doubao-flex doubao-items-center" style="padding: var(--doubao-space-20); border-bottom: 1px solid var(--doubao-border); background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%);">
+                <div class="doubao-icon doubao-icon-sm doubao-icon-forest" style="background: rgba(255, 255, 255, 0.2);">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div style="margin-left: var(--doubao-space-12);">
+                    <h1 class="doubao-text-xl doubao-font-semibold" style="color: var(--doubao-text-inverse); line-height: 1.2;">环保数据平台</h1>
+                    <p class="doubao-text-xs" style="color: rgba(255, 255, 255, 0.8);">生态环境数据底座</p>
+                </div>
+            </div>
+            
+            <!-- 导航菜单 -->
+            <nav class="flex-1 overflow-y-auto" style="padding: var(--doubao-space-16) var(--doubao-space-8);">
+                <div class="doubao-space-y-4">
+                    <a href="#" onclick="loadPage('dashboard.html')" 
+                       class="doubao-nav-item active doubao-animate-fade-in">
+                        <i class="fas fa-chart-line"></i>
+                        概览仪表板
+                    </a>
+                    
+                    <a href="#" onclick="loadPage('datasource.html')" 
+                       class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-100">
+                        <i class="fas fa-database"></i>
+                        数据源管理
+                    </a>
+                    
+                    <a href="#" onclick="loadPage('etl-designer.html')" 
+                       class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-200">
+                        <i class="fas fa-project-diagram"></i>
+                        ETL流程设计
+                    </a>
+                    
+                    <a href="#" onclick="loadPage('data-catalog.html')" 
+                       class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-300">
+                        <i class="fas fa-folder-tree"></i>
+                        数据资产目录
+                    </a>
+                    
+                    <a href="#" onclick="loadPage('api-service.html')" 
+                       class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-400">
+                        <i class="fas fa-cloud"></i>
+                        API服务管理
+                    </a>
+                    
+                    <a href="#" onclick="loadPage('monitoring.html')" 
+                       class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-500">
+                        <i class="fas fa-chart-bar"></i>
+                        监控告警
+                    </a>
+                </div>
+                
+                <div style="height: 1px; background-color: var(--doubao-border); margin: var(--doubao-space-16) 0;"></div>
+                
+                <a href="#" onclick="loadPage('settings.html')" 
+                   class="doubao-nav-item doubao-animate-fade-in doubao-animate-delay-600">
+                    <i class="fas fa-cog"></i>
+                    系统设置
+                </a>
+            </nav>
+            
+            <!-- 用户信息 -->
+            <div style="padding: var(--doubao-space-16); border-top: 1px solid var(--doubao-border);">
+                <div class="doubao-card" style="padding: var(--doubao-space-12);">
+                    <div class="doubao-flex doubao-items-center doubao-space-x-12">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+                             alt="用户头像" class="w-10 h-10 rounded-full object-cover" style="border: 2px solid var(--doubao-primary-200);">
+                        <div class="flex-1 min-w-0">
+                            <p class="doubao-text-md doubao-font-semibold truncate" style="color: var(--doubao-text-primary);">张工程师</p>
+                            <p class="doubao-text-sm truncate" style="color: var(--doubao-text-secondary);">数据工程师</p>
+                        </div>
+                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- 主内容区域 -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- 顶部状态栏 - 豆包风格 -->
+            <header class="doubao-header doubao-animate-fade-in">
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-w-full">
+                    <div class="doubao-flex doubao-items-center doubao-space-x-16">
+                        <h2 id="page-title" class="doubao-text-2xl doubao-font-semibold" style="color: var(--doubao-text-primary);">概览仪表板</h2>
+                        <div class="doubao-tag doubao-tag-success">
+                            <div class="w-2 h-2 rounded-full mr-2" style="background-color: var(--doubao-success);"></div>
+                            系统运行正常
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <!-- 实时时间 -->
+                        <div class="doubao-flex doubao-items-center doubao-text-sm" style="padding: var(--doubao-space-8) var(--doubao-space-12); background-color: var(--doubao-bg-hover); border-radius: var(--doubao-radius-md);">
+                            <i class="far fa-clock mr-2" style="color: var(--doubao-primary-500);"></i>
+                            <span id="current-time" style="color: var(--doubao-text-secondary);"></span>
+                        </div>
+                        
+                        <!-- 通知中心 -->
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm relative">
+                            <i class="far fa-bell"></i>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full text-xs" style="background-color: var(--doubao-danger);"></span>
+                        </button>
+                        
+                        <!-- 帮助 -->
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">
+                            <i class="far fa-question-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 页面内容区域 -->
+            <div class="flex-1 overflow-hidden" style="background-color: var(--doubao-bg-page);">
+                <iframe id="content-frame" 
+                        src="dashboard.html" 
+                        class="doubao-w-full doubao-h-full border-none"
+                        frameborder="0">
+                </iframe>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 页面加载函数
+        function loadPage(page) {
+            const iframe = document.getElementById('content-frame');
+            const pageTitle = document.getElementById('page-title');
+            
+            // 添加加载动画效果
+            iframe.style.opacity = '0.7';
+            
+            // 更新iframe源
+            iframe.src = page;
+            
+            // 更新页面标题
+            const pageTitles = {
+                'dashboard.html': '概览仪表板',
+                'datasource.html': '数据源管理',
+                'etl-designer.html': 'ETL流程设计',
+                'data-catalog.html': '数据资产目录',
+                'api-service.html': 'API服务管理',
+                'monitoring.html': '监控告警',
+                'settings.html': '系统设置'
+            };
+            
+            pageTitle.textContent = pageTitles[page] || '环保数据集成平台';
+            
+            // 更新导航状态
+            const navItems = document.querySelectorAll('.doubao-nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.target.closest('.doubao-nav-item').classList.add('active');
+            
+            // 页面加载完成后恢复透明度
+            iframe.onload = function() {
+                iframe.style.opacity = '1';
+            };
+        }
+        
+        // 实时时间更新
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        // 初始化
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // 添加页面切换动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframe = document.getElementById('content-frame');
+            iframe.style.transition = 'opacity 0.3s ease';
+        });
+    </script>
+</body>
+</html>

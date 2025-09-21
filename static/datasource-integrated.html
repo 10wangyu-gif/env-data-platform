@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据源管理 - API集成版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --doubao-primary-500: #3b82f6;
+            --doubao-primary-600: #2563eb;
+            --doubao-primary-50: #eff6ff;
+            --doubao-success: #10b981;
+            --doubao-warning: #f59e0b;
+            --doubao-danger: #ef4444;
+            --doubao-info: #06b6d4;
+            --doubao-secondary: #6b7280;
+            --doubao-text-primary: #111827;
+            --doubao-text-secondary: #6b7280;
+            --doubao-bg-page: #f9fafb;
+            --doubao-bg-container: #ffffff;
+            --doubao-bg-hover: #f3f4f6;
+            --doubao-border: #e5e7eb;
+            --doubao-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --doubao-radius-lg: 0.5rem;
+            --doubao-radius-sm: 0.25rem;
+            --doubao-space-4: 0.25rem;
+            --doubao-space-8: 0.5rem;
+            --doubao-space-12: 0.75rem;
+            --doubao-space-16: 1rem;
+            --doubao-space-24: 1.5rem;
+        }
+
+        .doubao-card {
+            background: var(--doubao-bg-container);
+            border-radius: var(--doubao-radius-lg);
+            box-shadow: var(--doubao-shadow-md);
+            padding: var(--doubao-space-24);
+        }
+
+        .doubao-btn {
+            padding: var(--doubao-space-8) var(--doubao-space-16);
+            border-radius: var(--doubao-radius-sm);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--doubao-space-8);
+        }
+
+        .doubao-btn-primary {
+            background-color: var(--doubao-primary-500);
+            color: white;
+        }
+
+        .doubao-btn-primary:hover {
+            background-color: var(--doubao-primary-600);
+        }
+
+        .doubao-btn-secondary {
+            background-color: var(--doubao-bg-page);
+            color: var(--doubao-text-primary);
+            border: 1px solid var(--doubao-border);
+        }
+
+        .doubao-btn-secondary:hover {
+            background-color: var(--doubao-bg-hover);
+        }
+
+        .doubao-btn-sm {
+            padding: var(--doubao-space-4) var(--doubao-space-8);
+            font-size: 0.875rem;
+        }
+
+        .doubao-btn-lg {
+            padding: var(--doubao-space-12) var(--doubao-space-24);
+            font-size: 1rem;
+        }
+
+        .doubao-input {
+            padding: var(--doubao-space-8) var(--doubao-space-12);
+            border: 1px solid var(--doubao-border);
+            border-radius: var(--doubao-radius-sm);
+            width: 100%;
+        }
+
+        .doubao-select {
+            padding: var(--doubao-space-8) var(--doubao-space-12);
+            border: 1px solid var(--doubao-border);
+            border-radius: var(--doubao-radius-sm);
+            background: white;
+        }
+
+        .doubao-tag {
+            padding: var(--doubao-space-4) var(--doubao-space-8);
+            border-radius: var(--doubao-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .doubao-tag-success {
+            background-color: #d1fae5;
+            color: var(--doubao-success);
+        }
+
+        .doubao-tag-danger {
+            background-color: #fee2e2;
+            color: var(--doubao-danger);
+        }
+
+        .doubao-tag-warning {
+            background-color: #fef3c7;
+            color: var(--doubao-warning);
+        }
+
+        .doubao-tag-info {
+            background-color: #dbeafe;
+            color: var(--doubao-primary-500);
+        }
+
+        .doubao-tag-secondary {
+            background-color: #f3f4f6;
+            color: var(--doubao-secondary);
+        }
+
+        .view-toggle-btn.active {
+            background-color: var(--doubao-primary-500) !important;
+            color: white !important;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--doubao-primary-500);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            background-color: var(--doubao-success);
+        }
+
+        .message.error {
+            background-color: var(--doubao-danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .grid {
+            display: grid;
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        @media (min-width: 768px) {
+            .md\\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .py-8 {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .py-12 {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+
+        .text-gray-500 {
+            color: #6b7280;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .col-span-full {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 页面头部 -->
+    <div class="doubao-card mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-semibold mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">数据源管理</h1>
+                <p class="text-lg" style="color: var(--doubao-text-secondary);">管理环保数据采集的各类数据源，包括HJ212协议设备、数据库连接等</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="refreshDataSources()" class="doubao-btn doubao-btn-secondary doubao-btn-lg">
+                    <i class="fas fa-sync-alt"></i>
+                    刷新
+                </button>
+                <button onclick="openAddDataSourceModal()" class="doubao-btn doubao-btn-primary doubao-btn-lg">
+                    <i class="fas fa-plus"></i>
+                    添加数据源
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索和筛选区域 -->
+    <div class="doubao-card mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+                <!-- 搜索框 -->
+                <div style="min-width: 300px; position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--doubao-text-secondary);"></i>
+                    <input id="searchInput" type="text" placeholder="搜索数据源..." class="doubao-input" style="padding-left: 40px;">
+                </div>
+
+                <!-- 类型筛选 -->
+                <select id="typeFilter" class="doubao-select">
+                    <option value="">所有类型</option>
+                    <option value="hj212">HJ212设备</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="api">API接口</option>
+                </select>
+
+                <!-- 状态筛选 -->
+                <select id="statusFilter" class="doubao-select">
+                    <option value="">所有状态</option>
+                    <option value="active">活动</option>
+                    <option value="inactive">暂停</option>
+                    <option value="error">错误</option>
+                </select>
+            </div>
+
+            <!-- 视图切换 -->
+            <div class="flex items-center" style="background-color: var(--doubao-bg-page); border-radius: var(--doubao-radius-lg); padding: var(--doubao-space-4);">
+                <button id="cardViewBtn" onclick="switchToCardView()" class="view-toggle-btn active doubao-btn doubao-btn-sm" style="margin-right: var(--doubao-space-4);">
+                    <i class="fas fa-th-large"></i>
+                    卡片
+                </button>
+                <button id="listViewBtn" onclick="switchToListView()" class="view-toggle-btn doubao-btn doubao-btn-sm">
+                    <i class="fas fa-list"></i>
+                    列表
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据源内容区域 -->
+    <div class="doubao-card">
+        <!-- 卡片视图 -->
+        <div id="cardView">
+            <div id="cardContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style="gap: var(--doubao-space-24);">
+                <!-- 动态生成卡片 -->
+            </div>
+        </div>
+
+        <!-- 列表视图 -->
+        <div id="listView" class="hidden">
+            <div style="overflow-x: auto;">
+                <table class="w-full" style="border-collapse: collapse; background-color: var(--doubao-bg-container); border-radius: var(--doubao-radius-lg); overflow: hidden; box-shadow: var(--doubao-shadow-md);">
+                    <thead>
+                        <tr style="background-color: var(--doubao-bg-page);">
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 25%;">数据源名称</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">类型</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 10%;">状态</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 20%;">连接信息</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">优先级</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">最后更新</th>
+                            <th style="padding: var(--doubao-space-16); text-align: center; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 9%;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 动态生成行 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div id="pagination" class="flex items-center justify-between" style="margin-top: var(--doubao-space-24);">
+            <div class="text-sm" style="color: var(--doubao-text-secondary);">
+                显示 <span id="pageInfo">1-10</span> 条，共 <span id="totalCount">0</span> 条
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="prevPageBtn" onclick="goToPage(currentPage - 1)" class="doubao-btn doubao-btn-secondary doubao-btn-sm" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="pageNumbers" class="flex items-center gap-2">
+                    <!-- 动态生成页码 -->
+                </span>
+                <button id="nextPageBtn" onclick="goToPage(currentPage + 1)" class="doubao-btn doubao-btn-secondary doubao-btn-sm" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+        // 全局状态
+        let dataSources = [];
+        let filteredDataSources = [];
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalCount = 0;
+        let isLoading = false;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataSources();
+            setupEventListeners();
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索框
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+            // 筛选器
+            document.getElementById('typeFilter').addEventListener('change', handleFilter);
+            document.getElementById('statusFilter').addEventListener('change', handleFilter);
+        }
+
+        // 获取认证令牌（从localStorage或其他地方获取）
+        function getAuthToken() {
+            return localStorage.getItem('auth_token') || 'dummy_token';
+        }
+
+        // 显示加载状态
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type = 'success') {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = message;
+            document.body.appendChild(messageEl);
+
+            setTimeout(() => {
+                messageEl.remove();
+            }, 3000);
+        }
+
+        function showSuccessMessage(message) {
+            showMessage(message, 'success');
+        }
+
+        function showErrorMessage(message) {
+            showMessage(message, 'error');
+        }
+
+        // 加载数据源列表
+        async function loadDataSources() {
+            if (isLoading) return;
+
+            isLoading = true;
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources?page=${currentPage}&page_size=${pageSize}`, {
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.code === 200) {
+                    dataSources = result.data.list || [];
+                    totalCount = result.data.total || 0;
+                    filteredDataSources = [...dataSources];
+                    renderDataSources();
+                    updatePagination();
+                } else {
+                    throw new Error(result.message || '获取数据源列表失败');
+                }
+            } catch (error) {
+                console.error('加载数据源失败:', error);
+                showErrorMessage('加载数据源列表失败，显示测试数据');
+                // 显示静态数据作为后备
+                loadStaticDataSources();
+            } finally {
+                isLoading = false;
+                showLoading(false);
+            }
+        }
+
+        // 刷新数据源
+        function refreshDataSources() {
+            currentPage = 1;
+            loadDataSources();
+        }
+
+        // 加载静态数据（用于测试）
+        function loadStaticDataSources() {
+            dataSources = [
+                {
+                    id: 1,
+                    name: '空气质量监测站-001',
+                    type: 'hj212',
+                    status: 'active',
+                    description: 'PM2.5, PM10, SO2, NO2实时监测',
+                    priority: 1,
+                    config: '{"host": "192.168.1.101", "port": 9001}',
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    name: '水质监测数据库',
+                    type: 'postgresql',
+                    status: 'active',
+                    description: 'PostgreSQL 地表水环境数据',
+                    priority: 2,
+                    config: '{"host": "pg-water.env.local", "database": "water_quality"}',
+                    updated_at: new Date().toISOString()
+                },
+                {
+                    id: 3,
+                    name: '噪声监测站-005',
+                    type: 'hj212',
+                    status: 'error',
+                    description: '环境噪声实时监测',
+                    priority: 3,
+                    config: '{"host": "192.168.1.105", "port": 9005}',
+                    updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                }
+            ];
+            totalCount = dataSources.length;
+            filteredDataSources = [...dataSources];
+            renderDataSources();
+            updatePagination();
+        }
+
+        // 渲染数据源列表
+        function renderDataSources() {
+            renderCardView();
+            renderListView();
+        }
+
+        // 渲染卡片视图
+        function renderCardView() {
+            const container = document.getElementById('cardContainer');
+
+            if (filteredDataSources.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500">暂无数据源</p></div>';
+                return;
+            }
+
+            const cardsHtml = filteredDataSources.map(ds => `
+                <div class="doubao-card hover:shadow-xl cursor-pointer transition-all"
+                     style="background: linear-gradient(135deg, ${getCardGradient(ds.type)} 100%); border-left: 4px solid ${getStatusColor(ds.status)};">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div style="background-color: ${getIconBg(ds.type)}; color: ${getIconColor(ds.type)}; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                                    <i class="${getTypeIcon(ds.type)}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold" style="color: var(--doubao-text-primary);">${ds.name}</h3>
+                                    <p class="text-sm" style="color: var(--doubao-text-secondary);">${ds.description || ''}</p>
+                                </div>
+                            </div>
+                            <span class="doubao-tag ${getStatusTagClass(ds.status)}">${getStatusText(ds.status)}</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 mb-4" style="gap: 16px;">
+                            <div>
+                                <div class="text-xs" style="color: var(--doubao-text-secondary);">类型</div>
+                                <div class="text-sm font-medium" style="color: var(--doubao-text-primary);">${getTypeText(ds.type)}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs" style="color: var(--doubao-text-secondary);">优先级</div>
+                                <div class="text-sm font-medium" style="color: var(--doubao-text-primary);">${ds.priority || 'N/A'}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                                <div class="text-sm font-medium" style="color: var(--doubao-text-primary);">${formatTime(ds.updated_at)}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm" style="color: var(--doubao-text-secondary);">
+                                ${getConnectionInfo(ds)}
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="viewDataSource(${ds.id})" style="color: var(--doubao-primary-500); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="查看详情">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="editDataSource(${ds.id})" style="color: var(--doubao-warning); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="testConnection(${ds.id})" style="color: var(--doubao-success); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="测试连接">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <button onclick="syncMetadata(${ds.id})" style="color: var(--doubao-info); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="同步元数据">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button onclick="deleteDataSource(${ds.id})" style="color: var(--doubao-danger); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = cardsHtml;
+        }
+
+        // 渲染列表视图
+        function renderListView() {
+            const tbody = document.getElementById('tableBody');
+
+            if (filteredDataSources.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">暂无数据源</td></tr>';
+                return;
+            }
+
+            const rowsHtml = filteredDataSources.map(ds => `
+                <tr style="border-bottom: 1px solid var(--doubao-border); transition: background-color 0.2s ease;" onmouseover="this.style.backgroundColor='var(--doubao-bg-hover)'" onmouseout="this.style.backgroundColor=''">
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <div class="flex items-center">
+                            <div style="width: 40px; height: 40px; margin-right: 12px; background-color: ${getIconBg(ds.type)}; color: ${getIconColor(ds.type)}; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i class="${getTypeIcon(ds.type)}"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium" style="color: var(--doubao-text-primary);">${ds.name}</div>
+                                <div class="text-sm" style="color: var(--doubao-text-secondary);">${ds.description || ''}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <span class="doubao-tag doubao-tag-info">${getTypeText(ds.type)}</span>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <span class="doubao-tag ${getStatusTagClass(ds.status)}">${getStatusText(ds.status)}</span>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <div class="text-sm">
+                            ${getConnectionInfo(ds)}
+                        </div>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <div class="text-sm">
+                            <div class="font-medium">${ds.priority || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;" class="text-sm" style="color: var(--doubao-text-secondary);">${formatTime(ds.updated_at)}</td>
+                    <td style="padding: 16px; vertical-align: middle; text-align: center;">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="viewDataSource(${ds.id})" style="color: var(--doubao-primary-500); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="editDataSource(${ds.id})" style="color: var(--doubao-warning); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="testConnection(${ds.id})" style="color: var(--doubao-success); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="测试连接">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button onclick="syncMetadata(${ds.id})" style="color: var(--doubao-primary-500); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="同步元数据">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button onclick="deleteDataSource(${ds.id})" style="color: var(--doubao-danger); padding: 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer;" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.innerHTML = rowsHtml;
+        }
+
+        // 测试连接
+        async function testConnection(id) {
+            const button = event.target.closest('button');
+            const originalHtml = button.innerHTML;
+
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources/${id}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200 && result.data.success) {
+                    button.innerHTML = '<i class="fas fa-check" style="color: var(--doubao-success);"></i>';
+                    showSuccessMessage(`连接测试成功: ${result.data.message}`);
+
+                    // 显示详细信息
+                    if (result.data.details) {
+                        console.log('连接详情:', result.data.details);
+                    }
+                } else {
+                    button.innerHTML = '<i class="fas fa-times" style="color: var(--doubao-danger);"></i>';
+                    showErrorMessage(`连接测试失败: ${result.data.message || result.message}`);
+                }
+            } catch (error) {
+                console.error('测试连接失败:', error);
+                button.innerHTML = '<i class="fas fa-times" style="color: var(--doubao-danger);"></i>';
+                showErrorMessage('连接测试失败: ' + error.message);
+            } finally {
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // 同步元数据
+        async function syncMetadata(id) {
+            const button = event.target.closest('button');
+            const originalHtml = button.innerHTML;
+
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources/${id}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200 && result.data.success) {
+                    button.innerHTML = '<i class="fas fa-check" style="color: var(--doubao-success);"></i>';
+                    showSuccessMessage(`元数据同步成功: ${result.data.message}`);
+
+                    // 显示同步的表信息
+                    if (result.data.tables && result.data.tables.length > 0) {
+                        console.log('同步的表:', result.data.tables);
+                    }
+                } else {
+                    button.innerHTML = '<i class="fas fa-times" style="color: var(--doubao-danger);"></i>';
+                    showErrorMessage(`元数据同步失败: ${result.data.message || result.message}`);
+                }
+            } catch (error) {
+                console.error('同步元数据失败:', error);
+                button.innerHTML = '<i class="fas fa-times" style="color: var(--doubao-danger);"></i>';
+                showErrorMessage('元数据同步失败: ' + error.message);
+            } finally {
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.disabled = false;
+                }, 2000);
+            }
+        }
+
+        // 搜索处理
+        function handleSearch() {
+            applyFilters();
+        }
+
+        // 筛选处理
+        function handleFilter() {
+            applyFilters();
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredDataSources = dataSources.filter(ds => {
+                const matchSearch = !searchTerm || ds.name.toLowerCase().includes(searchTerm) || (ds.description && ds.description.toLowerCase().includes(searchTerm));
+                const matchType = !typeFilter || ds.type === typeFilter;
+                const matchStatus = !statusFilter || ds.status === statusFilter;
+
+                return matchSearch && matchType && matchStatus;
+            });
+
+            renderDataSources();
+        }
+
+        // 视图切换
+        function switchToCardView() {
+            document.getElementById('cardView').classList.remove('hidden');
+            document.getElementById('listView').classList.add('hidden');
+
+            document.getElementById('cardViewBtn').classList.add('active');
+            document.getElementById('listViewBtn').classList.remove('active');
+        }
+
+        function switchToListView() {
+            document.getElementById('cardView').classList.add('hidden');
+            document.getElementById('listView').classList.remove('hidden');
+
+            document.getElementById('cardViewBtn').classList.remove('active');
+            document.getElementById('listViewBtn').classList.add('active');
+        }
+
+        // 更新分页
+        function updatePagination() {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(currentPage * pageSize, totalCount);
+
+            document.getElementById('pageInfo').textContent = `${startItem}-${endItem}`;
+            document.getElementById('totalCount').textContent = totalCount;
+
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentPage === totalPages || totalPages === 0;
+
+            // 生成页码
+            const pageNumbers = document.getElementById('pageNumbers');
+            let pageHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    pageHtml += `<span class="doubao-btn doubao-btn-primary doubao-btn-sm">${i}</span>`;
+                } else {
+                    pageHtml += `<button onclick="goToPage(${i})" class="doubao-btn doubao-btn-secondary doubao-btn-sm">${i}</button>`;
+                }
+            }
+            pageNumbers.innerHTML = pageHtml;
+        }
+
+        // 跳转页面
+        function goToPage(page) {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (page < 1 || page > totalPages) return;
+
+            currentPage = page;
+            loadDataSources();
+        }
+
+        // 工具函数
+        function getTypeIcon(type) {
+            const icons = {
+                'hj212': 'fas fa-broadcast-tower',
+                'mysql': 'fas fa-database',
+                'postgresql': 'fas fa-database',
+                'api': 'fas fa-cloud'
+            };
+            return icons[type] || 'fas fa-database';
+        }
+
+        function getTypeText(type) {
+            const texts = {
+                'hj212': 'HJ212设备',
+                'mysql': 'MySQL',
+                'postgresql': 'PostgreSQL',
+                'api': 'API接口'
+            };
+            return texts[type] || type;
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'active': '在线',
+                'inactive': '离线',
+                'error': '错误'
+            };
+            return texts[status] || status;
+        }
+
+        function getStatusTagClass(status) {
+            const classes = {
+                'active': 'doubao-tag-success',
+                'inactive': 'doubao-tag-secondary',
+                'error': 'doubao-tag-danger'
+            };
+            return classes[status] || 'doubao-tag-secondary';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'active': 'var(--doubao-success)',
+                'inactive': 'var(--doubao-secondary)',
+                'error': 'var(--doubao-danger)'
+            };
+            return colors[status] || 'var(--doubao-secondary)';
+        }
+
+        function getCardGradient(type) {
+            const gradients = {
+                'hj212': '#f0f9ff 0%, #e0f2fe',
+                'mysql': '#fefce8 0%, #fef3c7',
+                'postgresql': '#f0fdf4 0%, #dcfce7',
+                'api': '#faf5ff 0%, #f3e8ff'
+            };
+            return gradients[type] || '#f9fafb 0%, #f3f4f6';
+        }
+
+        function getIconBg(type) {
+            const colors = {
+                'hj212': '#dbeafe',
+                'mysql': '#fef3c7',
+                'postgresql': '#dcfce7',
+                'api': '#f3e8ff'
+            };
+            return colors[type] || '#f3f4f6';
+        }
+
+        function getIconColor(type) {
+            const colors = {
+                'hj212': 'var(--doubao-primary-500)',
+                'mysql': 'var(--doubao-warning)',
+                'postgresql': 'var(--doubao-success)',
+                'api': '#8b5cf6'
+            };
+            return colors[type] || 'var(--doubao-text-secondary)';
+        }
+
+        function getConnectionInfo(ds) {
+            try {
+                const config = JSON.parse(ds.config);
+                switch (ds.type) {
+                    case 'hj212':
+                        return `IP: ${config.host} | 端口: ${config.port}`;
+                    case 'mysql':
+                    case 'postgresql':
+                        return `主机: ${config.host} | 数据库: ${config.database}`;
+                    case 'api':
+                        return `URL: ${config.url}`;
+                    default:
+                        return '配置信息';
+                }
+            } catch (e) {
+                return '配置信息';
+            }
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return 'N/A';
+            const date = new Date(timeStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+            return `${Math.floor(diff / 86400)}天前`;
+        }
+
+        // 数据源操作
+        function openAddDataSourceModal() {
+            document.getElementById('addDataSourceModal').style.display = 'block';
+            document.getElementById('dataSourceForm').reset();
+            updateConfigFields();
+        }
+
+        async function viewDataSource(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources/${id}`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    showDataSourceDetails(result.data);
+                } else {
+                    showErrorMessage('获取数据源详情失败');
+                }
+            } catch (error) {
+                showErrorMessage('获取数据源详情失败: ' + error.message);
+            }
+        }
+
+        async function editDataSource(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources/${id}`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    showEditDataSourceModal(result.data);
+                } else {
+                    showErrorMessage('获取数据源信息失败');
+                }
+            } catch (error) {
+                showErrorMessage('获取数据源信息失败: ' + error.message);
+            }
+        }
+
+        async function deleteDataSource(id) {
+            if (confirm('确定要删除这个数据源吗？此操作不可恢复！')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/datasources/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.code === 200) {
+                        showSuccessMessage('数据源删除成功');
+                        loadDataSources(); // 重新加载列表
+                    } else {
+                        showErrorMessage('删除失败: ' + result.message);
+                    }
+                } catch (error) {
+                    showErrorMessage('删除失败: ' + error.message);
+                }
+            }
+        }
+
+        // 显示数据源详情
+        function showDataSourceDetails(dataSource) {
+            const modal = document.getElementById('viewDataSourceModal');
+            const content = document.getElementById('dataSourceDetails');
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div><strong>名称：</strong>${dataSource.name}</div>
+                    <div><strong>类型：</strong>${getDataSourceTypeText(dataSource.type)}</div>
+                    <div><strong>描述：</strong>${dataSource.description || '无'}</div>
+                    <div><strong>状态：</strong><span class="doubao-tag ${getStatusTagClass(dataSource.status)}">${getStatusText(dataSource.status)}</span></div>
+                    <div><strong>优先级：</strong>${dataSource.priority}</div>
+                    <div><strong>创建时间：</strong>${new Date(dataSource.created_at).toLocaleString()}</div>
+                    <div><strong>更新时间：</strong>${new Date(dataSource.updated_at).toLocaleString()}</div>
+                    <div><strong>配置信息：</strong><pre class="bg-gray-100 p-2 rounded text-sm">${JSON.stringify(dataSource.config_data || {}, null, 2)}</pre></div>
+                </div>
+            `;
+
+            modal.style.display = 'block';
+        }
+
+        // 显示编辑数据源模态框
+        function showEditDataSourceModal(dataSource) {
+            const modal = document.getElementById('editDataSourceModal');
+            const form = document.getElementById('editDataSourceForm');
+
+            // 填充表单数据
+            form.elements['name'].value = dataSource.name;
+            form.elements['type'].value = dataSource.type;
+            form.elements['description'].value = dataSource.description || '';
+            form.elements['priority'].value = dataSource.priority;
+
+            // 设置当前编辑的数据源ID
+            form.dataset.dataSourceId = dataSource.id;
+
+            // 更新配置字段
+            updateEditConfigFields(dataSource.type, dataSource.config_data);
+
+            modal.style.display = 'block';
+        }
+
+        // 更新配置字段（添加表单）
+        function updateConfigFields() {
+            const type = document.getElementById('dataSourceType').value;
+            const container = document.getElementById('configFields');
+
+            let fieldsHtml = '';
+
+            switch(type) {
+                case 'mysql':
+                case 'postgresql':
+                    fieldsHtml = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">主机地址</label>
+                                <input type="text" name="config[host]" class="doubao-input" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">端口</label>
+                                <input type="number" name="config[port]" class="doubao-input" value="${type === 'mysql' ? '3306' : '5432'}" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">数据库名</label>
+                                <input type="text" name="config[database]" class="doubao-input" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">用户名</label>
+                                <input type="text" name="config[username]" class="doubao-input" required>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium mb-1">密码</label>
+                                <input type="password" name="config[password]" class="doubao-input" required>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'hj212':
+                    fieldsHtml = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">设备IP</label>
+                                <input type="text" name="config[host]" class="doubao-input" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">端口</label>
+                                <input type="number" name="config[port]" class="doubao-input" value="9001" required>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium mb-1">设备ID</label>
+                                <input type="text" name="config[device_id]" class="doubao-input" required>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'api':
+                    fieldsHtml = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">API地址</label>
+                                <input type="url" name="config[url]" class="doubao-input" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">请求方法</label>
+                                    <select name="config[method]" class="doubao-select">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">认证类型</label>
+                                    <select name="config[auth_type]" class="doubao-select">
+                                        <option value="">无认证</option>
+                                        <option value="bearer">Bearer Token</option>
+                                        <option value="basic">Basic Auth</option>
+                                        <option value="api_key">API Key</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">认证信息</label>
+                                <input type="text" name="config[token]" class="doubao-input" placeholder="Token/用户名/API Key">
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            container.innerHTML = fieldsHtml;
+        }
+
+        // 更新编辑配置字段
+        function updateEditConfigFields(type, configData) {
+            const container = document.getElementById('editConfigFields');
+
+            let fieldsHtml = '';
+
+            switch(type) {
+                case 'mysql':
+                case 'postgresql':
+                    fieldsHtml = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">主机地址</label>
+                                <input type="text" name="config[host]" class="doubao-input" value="${configData.host || ''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">端口</label>
+                                <input type="number" name="config[port]" class="doubao-input" value="${configData.port || (type === 'mysql' ? '3306' : '5432')}" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">数据库名</label>
+                                <input type="text" name="config[database]" class="doubao-input" value="${configData.database || ''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">用户名</label>
+                                <input type="text" name="config[username]" class="doubao-input" value="${configData.username || ''}" required>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium mb-1">密码</label>
+                                <input type="password" name="config[password]" class="doubao-input" placeholder="留空表示不修改密码">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'hj212':
+                    fieldsHtml = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">设备IP</label>
+                                <input type="text" name="config[host]" class="doubao-input" value="${configData.host || ''}" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">端口</label>
+                                <input type="number" name="config[port]" class="doubao-input" value="${configData.port || '9001'}" required>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium mb-1">设备ID</label>
+                                <input type="text" name="config[device_id]" class="doubao-input" value="${configData.device_id || ''}" required>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'api':
+                    fieldsHtml = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">API地址</label>
+                                <input type="url" name="config[url]" class="doubao-input" value="${configData.url || ''}" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">请求方法</label>
+                                    <select name="config[method]" class="doubao-select">
+                                        <option value="GET" ${configData.method === 'GET' ? 'selected' : ''}>GET</option>
+                                        <option value="POST" ${configData.method === 'POST' ? 'selected' : ''}>POST</option>
+                                        <option value="PUT" ${configData.method === 'PUT' ? 'selected' : ''}>PUT</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">认证类型</label>
+                                    <select name="config[auth_type]" class="doubao-select">
+                                        <option value="" ${!configData.auth_type ? 'selected' : ''}>无认证</option>
+                                        <option value="bearer" ${configData.auth_type === 'bearer' ? 'selected' : ''}>Bearer Token</option>
+                                        <option value="basic" ${configData.auth_type === 'basic' ? 'selected' : ''}>Basic Auth</option>
+                                        <option value="api_key" ${configData.auth_type === 'api_key' ? 'selected' : ''}>API Key</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">认证信息</label>
+                                <input type="text" name="config[token]" class="doubao-input" value="${configData.token || ''}" placeholder="Token/用户名/API Key">
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            container.innerHTML = fieldsHtml;
+        }
+
+        // 提交新增数据源表单
+        async function submitDataSourceForm() {
+            const form = document.getElementById('dataSourceForm');
+            const formData = new FormData(form);
+
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                description: formData.get('description'),
+                priority: parseInt(formData.get('priority')),
+                config: {}
+            };
+
+            // 收集配置数据
+            for (const [key, value] of formData.entries()) {
+                if (key.startsWith('config[')) {
+                    const configKey = key.replace('config[', '').replace(']', '');
+                    if (value) data.config[configKey] = value;
+                }
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    showSuccessMessage('数据源创建成功');
+                    closeModal('addDataSourceModal');
+                    loadDataSources(); // 重新加载列表
+                } else {
+                    showErrorMessage('创建失败: ' + result.message);
+                }
+            } catch (error) {
+                showErrorMessage('创建失败: ' + error.message);
+            }
+        }
+
+        // 提交编辑数据源表单
+        async function submitEditDataSourceForm() {
+            const form = document.getElementById('editDataSourceForm');
+            const formData = new FormData(form);
+            const dataSourceId = form.dataset.dataSourceId;
+
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                description: formData.get('description'),
+                priority: parseInt(formData.get('priority')),
+                config: {}
+            };
+
+            // 收集配置数据
+            for (const [key, value] of formData.entries()) {
+                if (key.startsWith('config[')) {
+                    const configKey = key.replace('config[', '').replace(']', '');
+                    if (value) data.config[configKey] = value;
+                }
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/datasources/${dataSourceId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    showSuccessMessage('数据源更新成功');
+                    closeModal('editDataSourceModal');
+                    loadDataSources(); // 重新加载列表
+                } else {
+                    showErrorMessage('更新失败: ' + result.message);
+                }
+            } catch (error) {
+                showErrorMessage('更新失败: ' + error.message);
+            }
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 在数据源表单中测试连接
+        async function testConnectionInForm() {
+            const form = document.getElementById('dataSourceForm');
+            const formData = new FormData(form);
+
+            const config = {};
+            for (const [key, value] of formData.entries()) {
+                if (key.startsWith('config[')) {
+                    const configKey = key.replace('config[', '').replace(']', '');
+                    if (value) config[configKey] = value;
+                }
+            }
+
+            const data = {
+                name: formData.get('name') || 'Test',
+                type: formData.get('type'),
+                description: 'Test connection',
+                priority: 1,
+                config: config
+            };
+
+            const button = document.getElementById('testConnectionBtn');
+            const originalText = button.textContent;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+            button.disabled = true;
+
+            try {
+                // 先创建临时数据源
+                const createResponse = await fetch(`${API_BASE_URL}/datasources`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const createResult = await createResponse.json();
+
+                if (createResult.code === 200) {
+                    const tempId = createResult.data.id;
+
+                    // 测试连接
+                    const testResponse = await fetch(`${API_BASE_URL}/datasources/${tempId}/test`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                    });
+
+                    const testResult = await testResponse.json();
+
+                    // 删除临时数据源
+                    await fetch(`${API_BASE_URL}/datasources/${tempId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                    });
+
+                    if (testResult.code === 200 && testResult.data.success) {
+                        showSuccessMessage(`连接测试成功: ${testResult.data.message}`);
+                    } else {
+                        showErrorMessage(`连接测试失败: ${testResult.data.message || testResult.message}`);
+                    }
+                } else {
+                    showErrorMessage('测试失败: ' + createResult.message);
+                }
+            } catch (error) {
+                showErrorMessage('测试失败: ' + error.message);
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+    </script>
+
+    <!-- 添加数据源模态框 -->
+    <div id="addDataSourceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90%; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">添加数据源</h3>
+                <button onclick="closeModal('addDataSourceModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <form id="dataSourceForm" onsubmit="event.preventDefault(); submitDataSourceForm();">
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">数据源名称</label>
+                    <input type="text" name="name" class="doubao-input" required>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">数据源类型</label>
+                    <select id="dataSourceType" name="type" class="doubao-select" onchange="updateConfigFields()" required>
+                        <option value="">请选择类型</option>
+                        <option value="mysql">MySQL数据库</option>
+                        <option value="postgresql">PostgreSQL数据库</option>
+                        <option value="hj212">HJ212环保设备</option>
+                        <option value="api">API接口</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">描述</label>
+                    <textarea name="description" class="doubao-input" rows="3" placeholder="可选，描述数据源用途"></textarea>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">优先级</label>
+                    <select name="priority" class="doubao-select" required>
+                        <option value="1">高</option>
+                        <option value="2" selected>中</option>
+                        <option value="3">低</option>
+                    </select>
+                </div>
+
+                <div id="configFields" style="margin-bottom: 16px;">
+                    <!-- 动态配置字段将在这里显示 -->
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button id="testConnectionBtn" type="button" onclick="testConnectionInForm()" class="doubao-btn doubao-btn-secondary">
+                        <i class="fas fa-plug"></i> 测试连接
+                    </button>
+                    <button type="submit" class="doubao-btn doubao-btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button type="button" onclick="closeModal('addDataSourceModal')" class="doubao-btn doubao-btn-secondary">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 查看数据源模态框 -->
+    <div id="viewDataSourceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90%; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">数据源详情</h3>
+                <button onclick="closeModal('viewDataSourceModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <div id="dataSourceDetails">
+                <!-- 数据源详情将在这里显示 -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="closeModal('viewDataSourceModal')" class="doubao-btn doubao-btn-secondary">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑数据源模态框 -->
+    <div id="editDataSourceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 24px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90%; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">编辑数据源</h3>
+                <button onclick="closeModal('editDataSourceModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <form id="editDataSourceForm" onsubmit="event.preventDefault(); submitEditDataSourceForm();">
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">数据源名称</label>
+                    <input type="text" name="name" class="doubao-input" required>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">数据源类型</label>
+                    <select name="type" class="doubao-select" disabled>
+                        <option value="mysql">MySQL数据库</option>
+                        <option value="postgresql">PostgreSQL数据库</option>
+                        <option value="hj212">HJ212环保设备</option>
+                        <option value="api">API接口</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">描述</label>
+                    <textarea name="description" class="doubao-input" rows="3" placeholder="可选，描述数据源用途"></textarea>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="block text-sm font-medium mb-1">优先级</label>
+                    <select name="priority" class="doubao-select" required>
+                        <option value="1">高</option>
+                        <option value="2">中</option>
+                        <option value="3">低</option>
+                    </select>
+                </div>
+
+                <div id="editConfigFields" style="margin-bottom: 16px;">
+                    <!-- 动态配置字段将在这里显示 -->
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button type="submit" class="doubao-btn doubao-btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> 更新
+                    </button>
+                    <button type="button" onclick="closeModal('editDataSourceModal')" class="doubao-btn doubao-btn-secondary">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

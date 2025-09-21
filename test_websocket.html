@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HJ212 WebSocket 测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.connecting {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .subscription-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        select, input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .message-log {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .message.hj212_data {
+            background-color: #e7f3ff;
+            border-left-color: #28a745;
+        }
+        .message.device_status {
+            background-color: #fff3e0;
+            border-left-color: #ffc107;
+        }
+        .message.stats {
+            background-color: #f0f8ff;
+            border-left-color: #6f42c1;
+        }
+        .message.system {
+            background-color: #f8f9fa;
+            border-left-color: #6c757d;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+        .data-preview {
+            background-color: #f1f3f4;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 HJ212 环保数据 WebSocket 实时监控</h1>
+
+        <div class="controls">
+            <div id="connectionStatus" class="status disconnected">
+                未连接
+            </div>
+
+            <button id="connectBtn" onclick="connect()">连接</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>断开连接</button>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+
+        <div class="subscription-controls">
+            <label>订阅频道:</label>
+            <select id="channelSelect">
+                <option value="">全部频道</option>
+                <option value="hj212">HJ212数据</option>
+                <option value="device_status">设备状态</option>
+                <option value="stats">统计信息</option>
+            </select>
+            <button onclick="subscribe()">订阅</button>
+            <button onclick="unsubscribe()">取消订阅</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📊 实时统计</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalMessages">0</div>
+                <div class="stat-label">总消息数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="hj212Count">0</div>
+                <div class="stat-label">HJ212数据</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="deviceStatusCount">0</div>
+                <div class="stat-label">设备状态</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="connectedTime">00:00:00</div>
+                <div class="stat-label">连接时长</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📝 消息日志</h2>
+        <div id="messageLog" class="message-log"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let messageCount = 0;
+        let hj212Count = 0;
+        let deviceStatusCount = 0;
+        let connectTime = null;
+        let timeInterval = null;
+
+        function updateStatus(status, message) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = message;
+
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
+            if (status === 'connected') {
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                connectTime = new Date();
+                startTimer();
+            } else {
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                stopTimer();
+            }
+        }
+
+        function startTimer() {
+            timeInterval = setInterval(() => {
+                if (connectTime) {
+                    const elapsed = Math.floor((new Date() - connectTime) / 1000);
+                    const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+                    const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+                    const seconds = (elapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('connectedTime').textContent = `${hours}:${minutes}:${seconds}`;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timeInterval) {
+                clearInterval(timeInterval);
+                timeInterval = null;
+            }
+            document.getElementById('connectedTime').textContent = '00:00:00';
+        }
+
+        function connect() {
+            const channelSelect = document.getElementById('channelSelect');
+            const channel = channelSelect.value;
+
+            let wsUrl = 'ws://localhost:8888/ws';
+            if (channel) {
+                wsUrl += `?channel=${encodeURIComponent(channel)}`;
+            }
+
+            updateStatus('connecting', '连接中...');
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function(event) {
+                updateStatus('connected', '已连接');
+                addMessage('system', '成功连接到 WebSocket 服务器', { url: wsUrl });
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    addMessage('system', '收到无效消息格式', { raw: event.data, error: e.message });
+                }
+            };
+
+            ws.onclose = function(event) {
+                updateStatus('disconnected', '连接已断开');
+                addMessage('system', 'WebSocket 连接关闭', {
+                    code: event.code,
+                    reason: event.reason,
+                    wasClean: event.wasClean
+                });
+            };
+
+            ws.onerror = function(event) {
+                updateStatus('disconnected', '连接错误');
+                addMessage('system', 'WebSocket 连接错误', { error: event });
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function subscribe() {
+            const channel = document.getElementById('channelSelect').value;
+            if (ws && ws.readyState === WebSocket.OPEN && channel) {
+                ws.send(JSON.stringify({
+                    type: 'subscribe',
+                    channel: channel
+                }));
+                addMessage('system', `订阅频道: ${channel}`);
+            }
+        }
+
+        function unsubscribe() {
+            const channel = document.getElementById('channelSelect').value;
+            if (ws && ws.readyState === WebSocket.OPEN && channel) {
+                ws.send(JSON.stringify({
+                    type: 'unsubscribe',
+                    channel: channel
+                }));
+                addMessage('system', `取消订阅频道: ${channel}`);
+            }
+        }
+
+        function handleMessage(data) {
+            messageCount++;
+            document.getElementById('totalMessages').textContent = messageCount;
+
+            if (data.type === 'hj212_data') {
+                hj212Count++;
+                document.getElementById('hj212Count').textContent = hj212Count;
+                addMessage('hj212_data', 'HJ212监测数据', data.data, data.timestamp);
+            } else if (data.type === 'device_status') {
+                deviceStatusCount++;
+                document.getElementById('deviceStatusCount').textContent = deviceStatusCount;
+                addMessage('device_status', '设备状态更新', data.data, data.timestamp);
+            } else if (data.type === 'stats') {
+                addMessage('stats', '统计信息', data.data, data.timestamp);
+            } else {
+                addMessage('system', `未知消息类型: ${data.type}`, data, data.timestamp);
+            }
+        }
+
+        function addMessage(type, title, data = null, timestamp = null) {
+            const log = document.getElementById('messageLog');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+
+            const time = timestamp ? new Date(timestamp) : new Date();
+            const timeStr = time.toLocaleTimeString('zh-CN', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                fractionalSecondDigits: 3
+            });
+
+            let content = `<div class="timestamp">[${timeStr}]</div><div><strong>${title}</strong></div>`;
+
+            if (data) {
+                const preview = JSON.stringify(data, null, 2);
+                content += `<div class="data-preview">${preview}</div>`;
+            }
+
+            messageEl.innerHTML = content;
+            log.appendChild(messageEl);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('messageLog').innerHTML = '';
+            messageCount = 0;
+            hj212Count = 0;
+            deviceStatusCount = 0;
+            document.getElementById('totalMessages').textContent = '0';
+            document.getElementById('hj212Count').textContent = '0';
+            document.getElementById('deviceStatusCount').textContent = '0';
+        }
+
+        // 页面关闭时断开连接
+        window.addEventListener('beforeunload', function() {
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+</body>
+</html>

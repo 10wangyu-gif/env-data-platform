@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据资产目录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+    <style>
+        .view-toggle-btn.active {
+            background-color: var(--doubao-primary-500) !important;
+            color: white !important;
+        }
+        
+        .view-toggle-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .view-toggle-btn:hover {
+            background-color: var(--doubao-primary-100);
+            color: var(--doubao-primary-600);
+        }
+        
+        .view-toggle-btn.active:hover {
+            background-color: var(--doubao-primary-600) !important;
+            color: white !important;
+        }
+        
+        /* 列表视图样式优化 */
+        .doubao-table tbody tr {
+            border-bottom: 1px solid var(--doubao-border);
+            transition: background-color 0.2s ease;
+        }
+        
+        .doubao-table tbody tr:hover {
+            background-color: var(--doubao-bg-hover);
+        }
+        
+        .doubao-table tbody td {
+            padding: var(--doubao-space-16);
+            vertical-align: middle;
+        }
+        
+        .doubao-table tbody td:last-child {
+            text-align: center;
+        }
+        
+        .doubao-table .action-btn {
+            color: var(--doubao-primary-500);
+            padding: var(--doubao-space-8);
+            border-radius: var(--doubao-radius-sm);
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .doubao-table .action-btn:hover {
+            background-color: var(--doubao-primary-50);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div class="doubao-flex doubao-h-full overflow-hidden">
+        <!-- 左侧数据域分类 - 豆包风格 -->
+        <div class="doubao-sidebar" style="width: 280px;">
+            <div style="padding: var(--doubao-space-16); border-bottom: 1px solid var(--doubao-border);">
+                <h2 class="doubao-text-lg doubao-font-semibold doubao-mb-16" style="color: var(--doubao-text-primary);">数据域分类</h2>
+                <div class="relative">
+                    <input type="text" placeholder="搜索数据域..." class="form-input doubao-text-sm pl-8">
+                    <i class="fas fa-search absolute left-2.5 top-2.5 doubao-text-sm" style="color: var(--doubao-text-tertiary);"></i>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto" style="padding: var(--doubao-space-16);">
+                <!-- 环保数据域 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-leaf" style="margin-right: var(--doubao-space-8); color: var(--eco-forest);"></i>
+                        环保监测数据
+                    </h3>
+                    <div class="doubao-space-y-4" style="margin-left: var(--doubao-space-16);">
+                        <div class="doubao-nav-item active doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('air-quality')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-wind doubao-text-xs" style="color: var(--eco-air); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">空气质量</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">127张表</span>
+                        </div>
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('water-quality')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-tint doubao-text-xs" style="color: var(--eco-water); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">水质监测</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">89张表</span>
+                        </div>
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('soil-quality')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-mountain doubao-text-xs" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">土壤环境</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">56张表</span>
+                        </div>
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('noise-monitoring')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-volume-up doubao-text-xs" style="color: var(--doubao-primary-500); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">噪声监测</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">34张表</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 污染源数据 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-industry" style="margin-right: var(--doubao-space-8); color: var(--eco-soil);"></i>
+                        污染源数据
+                    </h3>
+                    <div class="doubao-space-y-4" style="margin-left: var(--doubao-space-16);">
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('pollution-source')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-industry doubao-text-xs" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">重点排污企业</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">156张表</span>
+                        </div>
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('emission-data')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-smoke doubao-text-xs" style="color: var(--eco-soil); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">排放数据</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">203张表</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 基础数据 -->
+                <div class="doubao-mb-24">
+                    <h3 class="doubao-text-sm doubao-font-medium doubao-mb-12 doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                        <i class="fas fa-database" style="margin-right: var(--doubao-space-8); color: var(--doubao-text-tertiary);"></i>
+                        基础数据
+                    </h3>
+                    <div class="doubao-space-y-4" style="margin-left: var(--doubao-space-16);">
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('meteorological')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-cloud-sun doubao-text-xs" style="color: var(--doubao-warning); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">气象数据</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">45张表</span>
+                        </div>
+                        <div class="doubao-nav-item doubao-flex doubao-items-center doubao-justify-between cursor-pointer" 
+                             onclick="loadCategory('geographic')">
+                            <div class="doubao-flex doubao-items-center">
+                                <i class="fas fa-map doubao-text-xs" style="color: var(--eco-forest); margin-right: var(--doubao-space-8);"></i>
+                                <span class="doubao-text-sm">地理信息</span>
+                            </div>
+                            <span class="doubao-text-xs" style="color: var(--doubao-text-tertiary);">78张表</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区域 - 豆包风格 -->
+        <div class="flex-1 doubao-flex flex-col overflow-hidden">
+            <!-- 页面头部 -->
+            <div class="doubao-card" style="border-radius: 0; border-left: none; border-right: none; border-top: none; padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-center doubao-justify-between">
+                    <div>
+                        <h1 class="doubao-text-4xl doubao-font-semibold doubao-mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">数据资产目录</h1>
+                        <p class="doubao-text-lg" style="color: var(--doubao-text-secondary);">管理和浏览环保数据资产，包括元数据、血缘关系和数据质量</p>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                        <div class="doubao-flex" style="background-color: var(--doubao-bg-container); border: 1px solid var(--doubao-border); border-radius: var(--doubao-radius-md); padding: 2px;">
+                            <button id="listViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn active" onclick="switchToListView()">
+                                <i class="fas fa-list" style="margin-right: var(--doubao-space-4);"></i>列表
+                            </button>
+                            <button id="cardViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn" onclick="switchToCardView()">
+                                <i class="fas fa-th-large" style="margin-right: var(--doubao-space-4);"></i>卡片
+                            </button>
+                        </div>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-lg">
+                            <i class="fas fa-plus" style="margin-right: var(--doubao-space-8);"></i>
+                            注册数据表
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 快速统计 - 豆包风格 -->
+            <div style="background-color: var(--doubao-bg-page); padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-space-x-16 doubao-mb-24" style="gap: var(--doubao-space-16);">
+                    <div class="doubao-stat-card doubao-card-air doubao-animate-fade-in flex-1">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-table"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="doubao-stat-value" style="color: var(--eco-air);">1,247</div>
+                                <div class="doubao-stat-label">数据表总数</div>
+                                <div class="doubao-stat-change positive">
+                                    <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                    +12 本月
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-stat-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100 flex-1">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-columns"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="doubao-stat-value" style="color: var(--eco-water);">25.6K</div>
+                                <div class="doubao-stat-label">字段总数</div>
+                                <div class="doubao-stat-change positive">
+                                    <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                    +156 本月
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-stat-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200 flex-1">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="doubao-stat-value" style="color: var(--eco-soil);">3,891</div>
+                                <div class="doubao-stat-label">血缘关系</div>
+                                <div class="doubao-stat-change positive">
+                                    <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                    +45 本月
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-stat-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300 flex-1">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="doubao-stat-value" style="color: var(--eco-forest);">94.2%</div>
+                                <div class="doubao-stat-label">数据质量</div>
+                                <div class="doubao-stat-change positive">
+                                    <i class="fas fa-check text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                    优秀
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-stat-card doubao-animate-fade-in doubao-animate-delay-400 flex-1" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-left: 4px solid #8b5cf6;">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="doubao-stat-value" style="color: #8b5cf6;">152.3K</div>
+                                <div class="doubao-stat-label">本月访问量</div>
+                                <div class="doubao-stat-change positive">
+                                    <i class="fas fa-arrow-up text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                    +18% 较上月
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 搜索和筛选 - 豆包风格 -->
+            <div style="background-color: var(--doubao-bg-container); border-top: 1px solid var(--doubao-border); border-bottom: 1px solid var(--doubao-border); padding: var(--doubao-space-24);">
+                <div class="doubao-flex flex-wrap doubao-items-center" style="gap: var(--doubao-space-16);">
+                    <div class="flex-1 min-w-80">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索数据表名称、描述、字段..." 
+                                   class="form-input pl-10" id="catalogSearch">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--doubao-text-tertiary);"></i>
+                        </div>
+                    </div>
+                    <select class="form-select w-40">
+                        <option value="">所有数据源</option>
+                        <option value="hj212">HJ212设备</option>
+                        <option value="database">数据库</option>
+                        <option value="file">文件</option>
+                    </select>
+                    <select class="form-select w-32">
+                        <option value="">质量等级</option>
+                        <option value="high">优秀</option>
+                        <option value="medium">良好</option>
+                        <option value="low">待改进</option>
+                    </select>
+                    <button class="doubao-btn doubao-btn-secondary">
+                        <i class="fas fa-filter" style="margin-right: var(--doubao-space-8);"></i>
+                        高级筛选
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 数据表列表 -->
+            <div class="flex-1 overflow-auto" style="padding: var(--doubao-space-24);">
+                <!-- 列表视图 -->
+                <div id="listView" style="display: block;">
+                    <div class="overflow-x-auto">
+                        <table class="doubao-table doubao-w-full" style="border-collapse: collapse; background-color: var(--doubao-bg-container); border-radius: var(--doubao-radius-lg); overflow: hidden; box-shadow: var(--doubao-shadow-md);">
+                            <thead>
+                                <tr style="background-color: var(--doubao-bg-page);">
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 25%;">数据表名称</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">数据源类型</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 10%;">质量等级</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 15%;">字段数/记录数</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 20%;">描述</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">最后更新</th>
+                                    <th style="padding: var(--doubao-space-16); text-align: center; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 6%;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 空气质量实时数据 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon doubao-icon-air" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-wind"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">空气质量实时数据</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">air_quality_realtime</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-primary">PostgreSQL</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-success">优秀</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">24字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">2.4M记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">存储各监测站点的实时空气质量数据，包括PM2.5、PM10等</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">2分钟前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('air_quality_realtime')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 地表水质监测 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon doubao-icon-water" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-tint"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">地表水质监测</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">water_quality_monitoring</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-secondary">MySQL</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-success">优秀</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">32字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">1.8M记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">地表水环境质量监测数据，包含COD、氨氮等指标</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">5分钟前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('water_quality_monitoring')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 污染源排放数据 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon doubao-icon-soil" style="width: 32px; height: 32px; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-industry"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">污染源排放数据</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">pollution_emission</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-info">HJ212设备</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-warning">良好</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">18字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">956K记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">重点排污企业的污染物排放数据，通过HJ212协议采集</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">1小时前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('pollution_emission')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 气象观测数据 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon" style="background-color: #fef3c7; color: #d97706; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-cloud-sun"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">气象观测数据</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">meteorological_data</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-warning">第三方API</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-primary">良好</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">16字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">3.2M记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">气象站观测数据，包含温度、湿度、风速风向等</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">30分钟前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('meteorological_data')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 监测站点信息 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon" style="background-color: #f3e8ff; color: #8b5cf6; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">监测站点信息</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">monitoring_stations</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-primary">PostgreSQL</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-success">优秀</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">28字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">456记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">各类环境监测站点的基础信息，包括位置、类型等</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">1天前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('monitoring_stations')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 数据质量报告 -->
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <div class="doubao-icon" style="background-color: #fce7f3; color: #ec4899; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-12);">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <div>
+                                                <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">数据质量报告</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">data_quality_report</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-secondary">ETL生成</span>
+                                    </td>
+                                    <td>
+                                        <span class="doubao-tag doubao-tag-danger">待改进</span>
+                                    </td>
+                                    <td>
+                                        <div class="doubao-text-sm">
+                                            <div class="doubao-font-medium">15字段</div>
+                                            <div style="color: var(--doubao-text-secondary);">12.3K记录</div>
+                                        </div>
+                                    </td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">数据质量检查结果，包含完整性、准确性等评估</td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">4小时前</td>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center doubao-justify-center">
+                                            <button class="action-btn" title="查看详情" onclick="showTableDetail('data_quality_report')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 卡片视图 -->
+                <div id="cardView" class="hidden">
+                    <div class="doubao-grid doubao-grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" style="gap: var(--doubao-space-24);">
+                        <!-- 空气质量监测表 -->
+                    <div class="doubao-card doubao-card-air doubao-animate-fade-in hover:shadow-xl cursor-pointer transition-all" onclick="showTableDetail('air_quality_realtime')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-wind"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">空气质量实时数据</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">air_quality_realtime</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-success">优秀</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                存储各监测站点的实时空气质量数据，包括PM2.5、PM10、SO2、NO2等主要污染物浓度
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">24</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">2.4M</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-database" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>PostgreSQL</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">2分钟前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 水质监测表 -->
+                    <div class="doubao-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100 hover:shadow-xl cursor-pointer transition-all" onclick="showTableDetail('water_quality_monitoring')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">地表水质监测</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">water_quality_monitoring</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-success">优秀</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                地表水环境质量监测数据，包含COD、氨氮、总磷、重金属等水质指标
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">32</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">1.8M</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-database" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>MySQL</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">5分钟前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 污染源排放表 -->
+                    <div class="doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200 hover:shadow-xl cursor-pointer transition-all" onclick="showTableDetail('pollution_emission')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-industry"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">污染源排放数据</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">pollution_emission</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-warning">良好</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                重点排污企业的污染物排放数据，通过HJ212协议实时采集
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">18</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">956K</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-broadcast-tower" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>HJ212设备</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">1小时前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 气象数据表 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-300 hover:shadow-xl cursor-pointer transition-all" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left: 4px solid var(--doubao-warning);" onclick="showTableDetail('meteorological_data')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon" style="background-color: #fef3c7; color: #d97706; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">气象观测数据</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">meteorological_data</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-primary">良好</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                气象站观测数据，包含温度、湿度、风速风向、降水量等气象要素
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">16</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">3.2M</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-cloud" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>第三方API</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">30分钟前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 监测站点信息表 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-400 hover:shadow-xl cursor-pointer transition-all" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-left: 4px solid #8b5cf6;" onclick="showTableDetail('monitoring_stations')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon" style="background-color: #f3e8ff; color: #8b5cf6; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">监测站点信息</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">monitoring_stations</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-success">优秀</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                各类环境监测站点的基础信息，包括位置、类型、设备信息等
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">28</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">456</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-database" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>PostgreSQL</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">1天前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据质量报告表 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-500 hover:shadow-xl cursor-pointer transition-all" style="background: linear-gradient(135deg, #fce7f3 0%, #fce7f3 100%); border-left: 4px solid #ec4899;" onclick="showTableDetail('data_quality_report')">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon" style="background-color: #fce7f3; color: #ec4899; margin-right: var(--doubao-space-12); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">数据质量报告</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">data_quality_report</p>
+                                    </div>
+                                </div>
+                                <span class="doubao-tag doubao-tag-danger">待改进</span>
+                            </div>
+                            
+                            <p style="color: var(--doubao-text-secondary);" class="doubao-text-sm doubao-mb-16">
+                                数据质量检查结果，包含完整性、准确性、一致性等质量维度评估
+                            </p>
+                            
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">15</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">字段数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">12.3K</div>
+                                    <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                                </div>
+                            </div>
+                            
+                            <div class="doubao-flex doubao-items-center doubao-justify-between doubao-text-sm">
+                                <div class="doubao-flex doubao-items-center" style="color: var(--doubao-text-secondary);">
+                                    <i class="fas fa-cogs" style="margin-right: var(--doubao-space-4);"></i>
+                                    <span>ETL生成</span>
+                                </div>
+                                <div style="color: var(--doubao-text-secondary);">4小时前更新</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="doubao-flex doubao-items-center doubao-justify-between" style="border-top: 1px solid var(--doubao-border); padding-top: var(--doubao-space-24); margin-top: var(--doubao-space-24);">
+                    <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                        显示 1-6 条，共 1,247 条记录
+                    </div>
+                    <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm" disabled>上一页</button>
+                        <button class="doubao-btn doubao-btn-primary doubao-btn-sm">1</button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">2</button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">3</button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">...</button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">208</button>
+                        <button class="doubao-btn doubao-btn-secondary doubao-btn-sm">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据表详情模态框 -->
+    <div id="tableDetailModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div class="modal-header">
+                <h3 class="modal-title">数据表详情</h3>
+                <button onclick="closeTableDetail()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- 表基本信息 -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">基本信息</h4>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">表名称:</span>
+                                    <span class="text-sm font-medium text-gray-900">空气质量实时数据</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">物理名:</span>
+                                    <span class="text-sm text-gray-900">air_quality_realtime</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">数据源:</span>
+                                    <span class="text-sm text-gray-900">环保监测数据库 (PostgreSQL)</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">所有者:</span>
+                                    <span class="text-sm text-gray-900">环保部门</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">创建时间:</span>
+                                    <span class="text-sm text-gray-900">2024-01-15</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="w-20 text-sm text-gray-500">描述:</span>
+                                    <span class="text-sm text-gray-900">存储各监测站点的实时空气质量数据，包括PM2.5、PM10、SO2、NO2等主要污染物浓度，数据每5分钟更新一次</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">统计信息</h4>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-primary-600">2.4M</div>
+                                    <div class="text-sm text-gray-500">总记录数</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-success-600">24</div>
+                                    <div class="text-sm text-gray-500">字段数量</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-warning-600">156MB</div>
+                                    <div class="text-sm text-gray-500">数据大小</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold text-success-600">96.8%</div>
+                                    <div class="text-sm text-gray-500">数据质量得分</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 字段信息 -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h4 class="card-title">字段信息</h4>
+                        <button class="btn btn-secondary text-sm">
+                            <i class="fas fa-download mr-1"></i>导出字典
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>字段名</th>
+                                    <th>中文名</th>
+                                    <th>数据类型</th>
+                                    <th>是否必填</th>
+                                    <th>默认值</th>
+                                    <th>描述</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-mono text-sm">station_id</td>
+                                    <td>站点ID</td>
+                                    <td><span class="tag tag-primary">VARCHAR(20)</span></td>
+                                    <td><i class="fas fa-check text-green-500"></i></td>
+                                    <td>-</td>
+                                    <td>监测站点唯一标识</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono text-sm">monitor_time</td>
+                                    <td>监测时间</td>
+                                    <td><span class="tag tag-warning">TIMESTAMP</span></td>
+                                    <td><i class="fas fa-check text-green-500"></i></td>
+                                    <td>-</td>
+                                    <td>数据采集时间</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono text-sm">pm25</td>
+                                    <td>PM2.5浓度</td>
+                                    <td><span class="tag tag-secondary">DECIMAL(8,2)</span></td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>NULL</td>
+                                    <td>PM2.5浓度值，单位μg/m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono text-sm">pm10</td>
+                                    <td>PM10浓度</td>
+                                    <td><span class="tag tag-secondary">DECIMAL(8,2)</span></td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>NULL</td>
+                                    <td>PM10浓度值，单位μg/m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono text-sm">so2</td>
+                                    <td>二氧化硫浓度</td>
+                                    <td><span class="tag tag-secondary">DECIMAL(8,2)</span></td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>NULL</td>
+                                    <td>SO2浓度值，单位μg/m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-mono text-sm">no2</td>
+                                    <td>二氧化氮浓度</td>
+                                    <td><span class="tag tag-secondary">DECIMAL(8,2)</span></td>
+                                    <td><i class="fas fa-times text-red-500"></i></td>
+                                    <td>NULL</td>
+                                    <td>NO2浓度值，单位μg/m³</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 数据血缘 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">上游依赖</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="env-icon air mr-3">
+                                    <i class="fas fa-broadcast-tower"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">HJ212监测设备</div>
+                                    <div class="text-sm text-gray-500">实时数据采集</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="env-icon water mr-3">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">站点基础信息表</div>
+                                    <div class="text-sm text-gray-500">monitoring_stations</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">下游引用</h4>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="env-icon soil mr-3">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">空气质量日报表</div>
+                                    <div class="text-sm text-gray-500">air_quality_daily</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                                <div class="env-icon noise mr-3">
+                                    <i class="fas fa-cloud"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">空气质量API</div>
+                                    <div class="text-sm text-gray-500">对外数据服务</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 质量检查 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">数据质量检查</h4>
+                        <span class="text-sm text-success-600">质量得分: 96.8%</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">98.5%</div>
+                            <div class="text-sm text-gray-600">完整性</div>
+                            <div class="text-xs text-gray-500 mt-1">缺失值检查</div>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">97.2%</div>
+                            <div class="text-sm text-gray-600">准确性</div>
+                            <div class="text-xs text-gray-500 mt-1">数值范围检查</div>
+                        </div>
+                        <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                            <div class="text-2xl font-bold text-yellow-600">94.8%</div>
+                            <div class="text-sm text-gray-600">一致性</div>
+                            <div class="text-xs text-gray-500 mt-1">时间序列检查</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeTableDetail()" class="btn btn-secondary">关闭</button>
+                <button class="btn btn-primary">查看数据</button>
+                <button class="btn btn-warning">编辑元数据</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 视图切换功能
+        function switchToListView() {
+            document.getElementById('listView').style.display = 'block';
+            document.getElementById('cardView').classList.add('hidden');
+            
+            // 更新按钮状态
+            document.getElementById('listViewBtn').classList.add('active');
+            document.getElementById('cardViewBtn').classList.remove('active');
+        }
+        
+        function switchToCardView() {
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('cardView').classList.remove('hidden');
+            
+            // 更新按钮状态
+            document.getElementById('listViewBtn').classList.remove('active');
+            document.getElementById('cardViewBtn').classList.add('active');
+        }
+        
+        // 分类切换
+        function loadCategory(category) {
+            const items = document.querySelectorAll('.category-item');
+            items.forEach(item => item.classList.remove('active', 'bg-primary-50', 'text-primary-700'));
+            
+            event.target.closest('.category-item').classList.add('active', 'bg-primary-50', 'text-primary-700');
+            
+            // 这里可以根据分类加载对应的数据表
+            console.log('Loading category:', category);
+        }
+        
+        // 显示表详情
+        function showTableDetail(tableName) {
+            document.getElementById('tableDetailModal').classList.remove('hidden');
+        }
+        
+        // 关闭表详情
+        function closeTableDetail() {
+            document.getElementById('tableDetailModal').classList.add('hidden');
+        }
+        
+        // 搜索功能
+        document.getElementById('catalogSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            // 搜索卡片视图
+            const cards = document.querySelectorAll('#cardView .doubao-card');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 搜索列表视图
+            const tableRows = document.querySelectorAll('#listView tbody tr');
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // 模态框外部点击关闭
+        document.getElementById('tableDetailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTableDetail();
+            }
+        });
+    </script>
+</body>
+</html>

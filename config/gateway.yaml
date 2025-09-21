@@ -1,0 +1,203 @@
+# 环保数据集成平台 - API网关配置
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: "30s"
+  write_timeout: "30s"
+  idle_timeout: "120s"
+  shutdown_timeout: "10s"
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+
+auth:
+  strategy: "jwt"  # none, apikey, jwt, basic, oauth2
+  jwt_secret: "env-data-platform-secret-key-change-in-production"
+  token_expiry: "24h"
+  issuer: "env-data-platform"
+  audience: "api"
+
+rate_limit:
+  enabled: true
+  strategy: "token_bucket"  # token_bucket, sliding_window, fixed_window
+  rate: 100                 # 每秒100个请求
+  burst: 200               # 突发200个请求
+  window: "1m"
+  key_func: "ip"           # ip, apikey, user, path
+  redis: false
+
+load_balance:
+  strategy: "round_robin"   # round_robin, weighted_round_robin, least_connections, consistent_hash, random
+  virtual_nodes: 100
+  health_check:
+    enabled: true
+    interval: "30s"
+    timeout: "5s"
+    path: "/health"
+    method: "GET"
+
+metrics:
+  enabled: true
+  path: "/metrics"
+  prometheus: true
+
+logging:
+  level: "info"            # debug, info, warn, error
+  format: "json"           # json, console
+  output: "stdout"         # stdout, file
+  file: "logs/gateway.log"
+  max_size: 100           # MB
+  max_backups: 3
+  max_age: 28             # days
+  compress: true
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+# 路由配置
+routes:
+  # HJ212协议数据接入API
+  - id: "hj212-data"
+    path: "/api/v1/hj212/*"
+    method: "POST"
+    target: "http://localhost:8081"
+    strip_prefix: false
+    timeout: "30s"
+    retries: 3
+    auth:
+      required: true
+      scopes: ["data:write", "hj212:access"]
+    rate_limit:
+      enabled: true
+      rate: 50
+      burst: 100
+      window: "1m"
+
+  # 数据查询API
+  - id: "data-query"
+    path: "/api/v1/data/*"
+    method: "GET"
+    target: "http://localhost:8082"
+    strip_prefix: false
+    timeout: "60s"
+    retries: 2
+    auth:
+      required: true
+      scopes: ["data:read"]
+    rate_limit:
+      enabled: true
+      rate: 200
+      burst: 400
+
+  # 数据资产目录API
+  - id: "catalog-api"
+    path: "/api/v1/catalog/*"
+    method: "GET"
+    service: "catalog-service"
+    strip_prefix: false
+    auth:
+      required: true
+      scopes: ["catalog:read"]
+
+  # 数据管理API
+  - id: "data-management"
+    path: "/api/v1/manage/*"
+    method: "*"
+    service: "management-service"
+    strip_prefix: false
+    auth:
+      required: true
+      scopes: ["admin", "data:manage"]
+
+  # 文件上传API
+  - id: "file-upload"
+    path: "/api/v1/upload/*"
+    method: "POST"
+    target: "http://localhost:8083"
+    timeout: "300s"  # 5分钟上传超时
+    auth:
+      required: true
+      scopes: ["file:upload"]
+    rate_limit:
+      enabled: true
+      rate: 10
+      burst: 20
+      window: "1m"
+
+  # ETL任务管理API
+  - id: "etl-tasks"
+    path: "/api/v1/etl/*"
+    method: "*"
+    service: "etl-service"
+    auth:
+      required: true
+      scopes: ["etl:manage"]
+
+# 服务配置
+services:
+  # 数据资产目录服务
+  - id: "catalog-service"
+    name: "Data Catalog Service"
+    strategy: "round_robin"
+    targets:
+      - id: "catalog-1"
+        url: "http://localhost:8084"
+        weight: 1
+        metadata:
+          version: "1.0.0"
+          region: "main"
+      - id: "catalog-2"
+        url: "http://localhost:8085"
+        weight: 1
+        metadata:
+          version: "1.0.0"
+          region: "backup"
+    health_check:
+      enabled: true
+      interval: "30s"
+      timeout: "5s"
+      path: "/health"
+      method: "GET"
+
+  # 数据管理服务
+  - id: "management-service"
+    name: "Data Management Service"
+    strategy: "least_connections"
+    targets:
+      - id: "mgmt-1"
+        url: "http://localhost:8086"
+        weight: 2
+        metadata:
+          type: "primary"
+      - id: "mgmt-2"
+        url: "http://localhost:8087"
+        weight: 1
+        metadata:
+          type: "secondary"
+
+  # ETL服务
+  - id: "etl-service"
+    name: "ETL Processing Service"
+    strategy: "weighted_round_robin"
+    targets:
+      - id: "etl-1"
+        url: "http://localhost:8088"
+        weight: 3
+        metadata:
+          capacity: "high"
+      - id: "etl-2"
+        url: "http://localhost:8089"
+        weight: 2
+        metadata:
+          capacity: "medium"
+      - id: "etl-3"
+        url: "http://localhost:8090"
+        weight: 1
+        metadata:
+          capacity: "low"
