@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据源管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+
+    <!-- 引入认证和API管理脚本 -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/datasource-manager.js"></script>
+    <style>
+        .view-toggle-btn.active {
+            background-color: var(--doubao-primary-500) !important;
+            color: white !important;
+        }
+        
+        .view-toggle-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .view-toggle-btn:hover {
+            background-color: var(--doubao-primary-100);
+            color: var(--doubao-primary-600);
+        }
+        
+        .view-toggle-btn.active:hover {
+            background-color: var(--doubao-primary-600) !important;
+            color: white !important;
+        }
+        
+        /* 列表视图样式优化 */
+        .doubao-table tbody tr {
+            border-bottom: 1px solid var(--doubao-border);
+            transition: background-color 0.2s ease;
+        }
+        
+        .doubao-table tbody tr:hover {
+            background-color: var(--doubao-bg-hover);
+        }
+        
+        .doubao-table tbody td {
+            padding: var(--doubao-space-16);
+            vertical-align: middle;
+        }
+        
+        .doubao-table tbody td:last-child {
+            text-align: center;
+        }
+        
+        .doubao-table .action-btn {
+            color: var(--doubao-primary-500);
+            padding: var(--doubao-space-8);
+            border-radius: var(--doubao-radius-sm);
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .doubao-table .action-btn:hover {
+            background-color: var(--doubao-primary-50);
+            opacity: 0.8;
+        }
+        
+        .doubao-table .action-btn.warning {
+            color: var(--doubao-warning);
+        }
+        
+        .doubao-table .action-btn.warning:hover {
+            background-color: #fef3c7;
+        }
+        
+        .doubao-table .action-btn.success {
+            color: var(--doubao-success);
+        }
+        
+        .doubao-table .action-btn.success:hover {
+            background-color: #d1fae5;
+        }
+        
+        .doubao-table .action-btn.danger {
+            color: var(--doubao-danger);
+        }
+        
+        .doubao-table .action-btn.danger:hover {
+            background-color: #fee2e2;
+        }
+    </style>
+</head>
+<body style="background-color: var(--doubao-bg-page); padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 页面头部 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in">
+        <div class="doubao-flex doubao-items-center doubao-justify-between">
+            <div>
+                <h1 class="doubao-text-4xl doubao-font-semibold doubao-mb-4" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">数据源管理</h1>
+                <p class="doubao-text-lg" style="color: var(--doubao-text-secondary);">管理环保数据采集的各类数据源，包括HJ212协议设备、数据库连接等</p>
+            </div>
+            <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                <!-- 用户信息显示 -->
+                <div id="userInfo" class="mr-4"></div>
+
+                <button onclick="refreshDataSources()" class="doubao-btn doubao-btn-secondary doubao-btn-lg">
+                    <i class="fas fa-sync-alt" style="margin-right: var(--doubao-space-8);"></i>
+                    刷新状态
+                </button>
+                <button onclick="openAddDataSourceModal()" class="doubao-btn doubao-btn-primary doubao-btn-lg">
+                    <i class="fas fa-plus" style="margin-right: var(--doubao-space-8);"></i>
+                    添加数据源
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速统计 - 豆包风格 -->
+    <div id="statsContainer" class="doubao-grid doubao-grid-cols-4 doubao-mb-24">
+        <!-- 统计数据将通过JavaScript动态加载 -->
+    </div>
+
+    <!-- 筛选和搜索 - 豆包风格 -->
+    <div class="doubao-card doubao-mb-24 doubao-animate-fade-in doubao-animate-delay-400">
+        <div class="doubao-flex flex-wrap doubao-items-center" style="gap: var(--doubao-space-16);">
+            <div class="flex-1 min-w-64">
+                <div class="relative">
+                    <input type="text" placeholder="搜索数据源名称、描述..." 
+                           class="form-input pl-10" id="searchInput">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2" style="color: var(--doubao-text-tertiary);"></i>
+                </div>
+            </div>
+            <select class="form-select w-40" id="typeFilter">
+                <option value="">所有类型</option>
+                <option value="hj212">HJ212设备</option>
+                <option value="database">数据库</option>
+                <option value="file">文件</option>
+                <option value="api">API接口</option>
+            </select>
+            <select class="form-select w-32" id="statusFilter">
+                <option value="">所有状态</option>
+                <option value="online">在线</option>
+                <option value="offline">离线</option>
+                <option value="error">异常</option>
+            </select>
+            <button class="doubao-btn doubao-btn-secondary">
+                <i class="fas fa-sync-alt" style="margin-right: var(--doubao-space-8);"></i>
+                刷新
+            </button>
+        </div>
+    </div>
+
+    <!-- 数据源列表 - 豆包风格 -->
+    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-500">
+        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+            <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-16);">
+                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">数据源列表</h3>
+                <p id="totalCount" class="doubao-text-sm" style="color: var(--doubao-text-secondary);">加载中...</p>
+            </div>
+            <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-12);">
+                <div class="doubao-flex" style="background-color: var(--doubao-bg-container); border: 1px solid var(--doubao-border); border-radius: var(--doubao-radius-md); padding: 2px;">
+                    <button id="cardViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn" onclick="switchToCardView()">
+                        <i class="fas fa-th-large" style="margin-right: var(--doubao-space-4);"></i>卡片
+                    </button>
+                    <button id="listViewBtn" class="doubao-btn doubao-btn-ghost doubao-btn-sm view-toggle-btn active" onclick="switchToListView()">
+                        <i class="fas fa-list" style="margin-right: var(--doubao-space-4);"></i>列表
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 错误和成功提示容器 -->
+        <div id="messageContainer" style="padding: 0 var(--doubao-space-24);"></div>
+
+        <!-- 卡片视图 -->
+        <div id="cardView" class="doubao-grid doubao-grid-cols-1 xl:grid-cols-2 hidden" style="gap: var(--doubao-space-16); padding: var(--doubao-space-24);">
+            <!-- 数据源卡片将通过JavaScript动态生成 -->
+            <div class="doubao-card doubao-card-air doubao-animate-fade-in hover:shadow-xl cursor-pointer transition-all">
+                <div style="padding: var(--doubao-space-24);">
+                    <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div>
+                                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">空气质量监测站-001</h3>
+                                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">PM2.5, PM10, SO2, NO2实时监测</p>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-success">在线</span>
+                    </div>
+                    
+                    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">设备类型</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">HJ212设备</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">数据量</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">24.5K 条/天</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">2分钟前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                            IP: 192.168.1.101 | 端口: 9001
+                        </div>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button style="color: var(--doubao-success);" class="hover:opacity-80" title="测试连接">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据库数据源 -->
+            <div class="doubao-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100 hover:shadow-xl cursor-pointer transition-all">
+                <div style="padding: var(--doubao-space-24);">
+                    <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">水质监测数据库</h3>
+                                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">PostgreSQL 地表水环境数据</p>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-success">在线</span>
+                    </div>
+                    
+                    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">数据库类型</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">PostgreSQL</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">数据量</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">156.8K 条/天</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">5分钟前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                            Host: pg-water.env.local | DB: water_quality
+                        </div>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button style="color: var(--doubao-success);" class="hover:opacity-80" title="测试连接">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件数据源 -->
+            <div class="doubao-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200 hover:shadow-xl cursor-pointer transition-all">
+                <div style="padding: var(--doubao-space-24);">
+                    <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <div>
+                                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">污染源企业清单</h3>
+                                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">Excel文件，包含企业基本信息</p>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-success">可用</span>
+                    </div>
+                    
+                    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">文件类型</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">Excel文件</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">记录数</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">1,234 记录</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">昨天</div>
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                            /data/pollution_sources.xlsx | 更新频率: 每周
+                        </div>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="下载">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API接口数据源 -->
+            <div class="doubao-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300 hover:shadow-xl cursor-pointer transition-all">
+                <div style="padding: var(--doubao-space-24);">
+                    <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <div>
+                                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">气象数据API</h3>
+                                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">第三方天气数据接口</p>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-warning">限流中</span>
+                    </div>
+                    
+                    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">接口类型</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">REST API</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">调用量</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">8.9K 次/天</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">1小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                            api.weather.com | 认证: API Key
+                        </div>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button style="color: var(--doubao-success);" class="hover:opacity-80" title="测试连接">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 异常数据源 -->
+            <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-400 hover:shadow-xl cursor-pointer transition-all" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid var(--doubao-danger);">
+                <div style="padding: var(--doubao-space-24);">
+                    <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                        <div class="doubao-flex doubao-items-center">
+                            <div class="doubao-icon" style="background-color: #fecaca; color: var(--doubao-danger); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-16);">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div>
+                                <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">噪声监测站-005</h3>
+                                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">环境噪声实时监测</p>
+                            </div>
+                        </div>
+                        <span class="doubao-tag doubao-tag-danger">离线</span>
+                    </div>
+                    
+                    <div class="doubao-grid doubao-grid-cols-3 doubao-mb-16" style="gap: var(--doubao-space-16);">
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">设备类型</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">HJ212设备</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">数据量</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: #9ca3af;">0 条/天</div>
+                        </div>
+                        <div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">最后更新</div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-danger);">2小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="doubao-flex doubao-items-center doubao-justify-between">
+                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                            IP: 192.168.1.105 | 端口: 9005
+                        </div>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="重启连接">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 列表视图 -->
+        <div id="listView" class="" style="padding: var(--doubao-space-24);">
+            <div class="overflow-x-auto">
+                <table class="doubao-table doubao-w-full" style="border-collapse: collapse; background-color: var(--doubao-bg-container); border-radius: var(--doubao-radius-lg); overflow: hidden; box-shadow: var(--doubao-shadow-md);"">
+                    <thead>
+                        <tr style="background-color: var(--doubao-bg-page);">
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 25%;">数据源名称</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">类型</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 10%;">状态</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 20%;">连接信息</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">数据量</th>
+                            <th style="padding: var(--doubao-space-16); text-align: left; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 12%;">最后更新</th>
+                            <th style="padding: var(--doubao-space-16); text-align: center; color: var(--doubao-text-secondary); font-weight: 500; border-bottom: 1px solid var(--doubao-border); width: 9%;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataSourceTableBody">
+                        <!-- 数据源行将通过JavaScript动态生成 -->
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--doubao-text-secondary);">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 16px;"></i>
+                                <div>加载中...</div>
+                            </td>
+                        </tr>
+                        <!-- HJ212设备数据源 -->
+                        <tr>
+                            <td>
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-air" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-broadcast-tower"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">空气质量监测站-001</div>
+                                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">PM2.5, PM10, SO2, NO2实时监测</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-info">HJ212设备</span>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-success">在线</span>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div>IP: 192.168.1.101</div>
+                                    <div style="color: var(--doubao-text-secondary);">端口: 9001</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium">24.5K</div>
+                                    <div style="color: var(--doubao-text-secondary);">条/天</div>
+                                </div>
+                            </td>
+                            <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">2分钟前</td>
+                            <td>
+                                <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                                    <button class="action-btn" title="查看详情">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn warning" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn success" title="测试连接">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                    <button class="action-btn danger" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- 数据库数据源 -->
+                        <tr>
+                            <td>
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-water" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-database"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">水质监测数据库</div>
+                                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">PostgreSQL 地表水环境数据</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-secondary">PostgreSQL</span>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-success">在线</span>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div>host: pg-water.env.local</div>
+                                    <div style="color: var(--doubao-text-secondary);">database: water_quality</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium">156.8K</div>
+                                    <div style="color: var(--doubao-text-secondary);">条/天</div>
+                                </div>
+                            </td>
+                            <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">5分钟前</td>
+                            <td>
+                                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                    <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-success);" class="hover:opacity-80" title="测试连接">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- 文件数据源 -->
+                        <tr>
+                            <td>
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-soil" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-file-csv"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">污染源企业清单</div>
+                                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">Excel文件，包含企业基本信息</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-warning">Excel文件</span>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-success">可用</span>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div>/data/pollution_sources.xlsx</div>
+                                    <div style="color: var(--doubao-text-secondary);">更新频率: 每周</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium">1,234</div>
+                                    <div style="color: var(--doubao-text-secondary);">记录</div>
+                                </div>
+                            </td>
+                            <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">昨天</td>
+                            <td>
+                                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                    <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="下载">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- API接口数据源 -->
+                        <tr>
+                            <td>
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-forest" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-cloud"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">气象数据API</div>
+                                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">第三方天气数据接口</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-success">REST API</span>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-warning">限流中</span>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div>api.weather.com</div>
+                                    <div style="color: var(--doubao-text-secondary);">认证: API Key</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium">8.9K</div>
+                                    <div style="color: var(--doubao-text-secondary);">次/天</div>
+                                </div>
+                            </td>
+                            <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">1小时前</td>
+                            <td>
+                                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                    <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-success);" class="hover:opacity-80" title="测试连接">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- 异常数据源 -->
+                        <tr style="background-color: #fef2f2;">
+                            <td>
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon" style="width: 40px; height: 40px; background-color: #fecaca; color: var(--doubao-danger); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: var(--doubao-space-12);">
+                                        <i class="fas fa-broadcast-tower"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">噪声监测站-005</div>
+                                        <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">环境噪声实时监测</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-info">HJ212设备</span>
+                            </td>
+                            <td>
+                                <span class="doubao-tag doubao-tag-danger">离线</span>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div>IP: 192.168.1.105</div>
+                                    <div style="color: var(--doubao-text-secondary);">端口: 9005</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="doubao-text-sm">
+                                    <div class="doubao-font-medium" style="color: #9ca3af;">0</div>
+                                    <div style="color: var(--doubao-text-secondary);">条/天</div>
+                                </div>
+                            </td>
+                            <td class="doubao-text-sm" style="color: var(--doubao-danger);">2小时前</td>
+                            <td>
+                                <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                    <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="查看详情">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-warning);" class="hover:opacity-80" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="重启连接">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 分页 - 豆包风格 -->
+        <div id="paginationContainer" class="doubao-flex doubao-items-center doubao-justify-between" style="border-top: 1px solid var(--doubao-border); padding: var(--doubao-space-16) var(--doubao-space-24); margin-top: var(--doubao-space-16);">
+            <div id="paginationInfo" class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                加载中...
+            </div>
+            <div id="paginationButtons" class="doubao-flex" style="gap: var(--doubao-space-8);">
+                <!-- 分页按钮将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加数据源模态框 -->
+    <div id="addDataSourceModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h3 class="modal-title">添加数据源</h3>
+                <button onclick="closeAddDataSourceModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="addDataSourceForm">
+                    <!-- 数据源类型选择 -->
+                    <div class="form-group">
+                        <label class="form-label">数据源类型</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="relative">
+                                <input type="radio" name="dataSourceType" value="hj212" id="hj212Type" class="sr-only">
+                                <label for="hj212Type" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 peer-checked:border-primary-600 peer-checked:bg-primary-50">
+                                    <div class="env-icon air mr-3">
+                                        <i class="fas fa-broadcast-tower"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">HJ212设备</div>
+                                        <div class="text-sm text-gray-500">污染源在线监控设备</div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="relative">
+                                <input type="radio" name="dataSourceType" value="database" id="databaseType" class="sr-only">
+                                <label for="databaseType" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 peer-checked:border-primary-600 peer-checked:bg-primary-50">
+                                    <div class="env-icon water mr-3">
+                                        <i class="fas fa-database"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">数据库</div>
+                                        <div class="text-sm text-gray-500">MySQL, PostgreSQL等</div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="relative">
+                                <input type="radio" name="dataSourceType" value="file" id="fileType" class="sr-only">
+                                <label for="fileType" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 peer-checked:border-primary-600 peer-checked:bg-primary-50">
+                                    <div class="env-icon soil mr-3">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">文件数据源</div>
+                                        <div class="text-sm text-gray-500">CSV, Excel, JSON等</div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="relative">
+                                <input type="radio" name="dataSourceType" value="api" id="apiType" class="sr-only">
+                                <label for="apiType" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary-300 peer-checked:border-primary-600 peer-checked:bg-primary-50">
+                                    <div class="env-icon noise mr-3">
+                                        <i class="fas fa-cloud"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">API接口</div>
+                                        <div class="text-sm text-gray-500">REST API, SOAP等</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 基本信息 -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">数据源名称</label>
+                            <input type="text" id="dataSourceName" class="form-input" placeholder="请输入数据源名称" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">数据源描述</label>
+                            <input type="text" id="dataSourceDescription" class="form-input" placeholder="请输入数据源描述" name="description">
+                        </div>
+                    </div>
+
+                    <!-- HJ212设备配置 -->
+                    <div id="hj212Config" class="hidden">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">HJ212设备配置</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">设备IP地址</label>
+                                <input type="text" id="hj212Host" class="form-input" placeholder="192.168.1.100" name="host">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">端口号</label>
+                                <input type="number" id="hj212Port" class="form-input" placeholder="9001" name="listen_port">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">设备编号</label>
+                                <input type="text" id="deviceId" class="form-input" placeholder="设备唯一标识" name="device_id">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">协议版本</label>
+                                <select id="protocol" class="form-select" name="protocol">
+                                    <option value="TCP">TCP</option>
+                                    <option value="UDP">UDP</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API配置 -->
+                    <div id="apiConfig" class="hidden">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">API配置</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group col-span-2">
+                                <label class="form-label">API地址</label>
+                                <input type="url" id="apiUrl" class="form-input" placeholder="https://api.example.com" name="url">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">请求方法</label>
+                                <select id="apiMethod" class="form-select" name="method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">超时时间(秒)</label>
+                                <input type="number" id="apiTimeout" class="form-input" placeholder="30" name="timeout">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 文件配置 -->
+                    <div id="fileConfig" class="hidden">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">文件配置</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group col-span-2">
+                                <label class="form-label">文件路径</label>
+                                <input type="text" id="filePath" class="form-input" placeholder="/data/file.csv" name="file_path">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">文件格式</label>
+                                <select id="fileFormat" class="form-select" name="file_format">
+                                    <option value="csv">CSV</option>
+                                    <option value="xlsx">Excel</option>
+                                    <option value="json">JSON</option>
+                                    <option value="xml">XML</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">编码格式</label>
+                                <select id="fileEncoding" class="form-select" name="encoding">
+                                    <option value="utf-8">UTF-8</option>
+                                    <option value="gbk">GBK</option>
+                                    <option value="gb2312">GB2312</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据库配置 -->
+                    <div id="databaseConfig" class="hidden">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">数据库配置</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">数据库类型</label>
+                                <select id="dbType" class="form-select" name="dbType">
+                                    <option value="mysql">MySQL</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                    <option value="oracle">Oracle</option>
+                                    <option value="sqlserver">SQL Server</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">主机地址</label>
+                                <input type="text" id="dbHost" class="form-input" placeholder="localhost" name="host">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">端口</label>
+                                <input type="number" id="dbPort" class="form-input" placeholder="3306" name="port">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">数据库名</label>
+                                <input type="text" id="dbName" class="form-input" placeholder="database_name" name="database">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">用户名</label>
+                                <input type="text" id="dbUsername" class="form-input" placeholder="username" name="username">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <input type="password" id="dbPassword" class="form-input" placeholder="password" name="password">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeAddDataSourceModal()" class="btn btn-secondary">取消</button>
+                <button onclick="testConnection()" class="btn btn-warning">测试连接</button>
+                <button onclick="saveDataSource()" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据源详情模态框 -->
+    <div id="dataSourceDetailModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h3 class="modal-title">数据源详情</h3>
+                <button onclick="closeDataSourceDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="dataSourceDetailContent">
+                    <!-- 基本信息 -->
+                    <div class="doubao-card doubao-mb-24">
+                        <div class="doubao-card-header">
+                            <h4 class="doubao-card-title">基本信息</h4>
+                        </div>
+                        <div class="doubao-card-body">
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-gap-16">
+                                <div>
+                                    <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">名称</label>
+                                    <p id="detail-name" class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;"></p>
+                                </div>
+                                <div>
+                                    <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">类型</label>
+                                    <p id="detail-type" class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;"></p>
+                                </div>
+                                <div>
+                                    <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">状态</label>
+                                    <div id="detail-status" style="margin-top: 4px;"></div>
+                                </div>
+                                <div>
+                                    <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">连接状态</label>
+                                    <div id="detail-connection" style="margin-top: 4px;"></div>
+                                </div>
+                                <div class="doubao-col-span-2">
+                                    <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">描述</label>
+                                    <p id="detail-description" class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 连接配置 -->
+                    <div class="doubao-card doubao-mb-24">
+                        <div class="doubao-card-header">
+                            <h4 class="doubao-card-title">连接配置</h4>
+                        </div>
+                        <div class="doubao-card-body">
+                            <div id="detail-config" class="doubao-grid doubao-grid-cols-2 doubao-gap-16">
+                                <!-- 配置信息将动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 统计信息 -->
+                    <div class="doubao-card doubao-mb-24">
+                        <div class="doubao-card-header">
+                            <h4 class="doubao-card-title">统计信息</h4>
+                        </div>
+                        <div class="doubao-card-body">
+                            <div class="doubao-grid doubao-grid-cols-4 doubao-gap-16">
+                                <div class="doubao-text-center">
+                                    <div id="detail-data-count" class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-primary-500);">0</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">数据记录</div>
+                                </div>
+                                <div class="doubao-text-center">
+                                    <div id="detail-last-sync" class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-success-500);">-</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">最后同步</div>
+                                </div>
+                                <div class="doubao-text-center">
+                                    <div id="detail-error-count" class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-danger-500);">0</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">错误次数</div>
+                                </div>
+                                <div class="doubao-text-center">
+                                    <div id="detail-uptime" class="doubao-text-2xl doubao-font-bold" style="color: var(--doubao-info-500);">0%</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">运行时间</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作记录 -->
+                    <div class="doubao-card">
+                        <div class="doubao-card-header">
+                            <h4 class="doubao-card-title">最近操作</h4>
+                        </div>
+                        <div class="doubao-card-body">
+                            <div id="detail-operations" class="doubao-space-y-8">
+                                <!-- 操作记录将动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="closeDataSourceDetailModal()" class="btn btn-secondary">关闭</button>
+                <button onclick="testDataSourceConnection()" class="btn btn-warning">测试连接</button>
+                <button onclick="syncDataSource()" class="btn btn-primary">同步数据</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let authManager, apiClient, dataSourceManager, wsManager;
+        let currentPage = 1;
+        let pageSize = 10;
+        let currentFilters = {};
+        let currentViewMode = 'list'; // list or card
+        let editingDataSourceId = null;
+        let currentDataSources = []; // 存储当前数据源数据用于视图切换
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化认证管理器
+            authManager = requireAuth();
+            if (!authManager) return;
+
+            // 显示用户信息
+            displayUserInfo('userInfo');
+
+            // 初始化API客户端
+            apiClient = new APIClient(authManager);
+            dataSourceManager = new DataSourceManager(authManager, apiClient);
+
+            // 初始化WebSocket
+            wsManager = new WebSocketManager();
+            wsManager.init(authManager, ['datasource_status', 'system_stats']);
+
+            // 绑定事件监听器
+            bindEventListeners();
+
+            // 加载初始数据
+            await loadDataSources();
+            await loadStats();
+        });
+
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentFilters.name = this.value;
+                    currentPage = 1;
+                    loadDataSources();
+                }, 500);
+            });
+
+            // 类型筛选
+            document.getElementById('typeFilter').addEventListener('change', function() {
+                currentFilters.type = this.value;
+                currentPage = 1;
+                loadDataSources();
+            });
+
+            // 状态筛选
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                if (this.value === 'online') {
+                    currentFilters.status = 'active';
+                    currentFilters.is_connected = true;
+                } else if (this.value === 'offline') {
+                    currentFilters.status = 'active';
+                    currentFilters.is_connected = false;
+                } else if (this.value === 'error') {
+                    currentFilters.error_count = '>0';
+                } else {
+                    delete currentFilters.status;
+                    delete currentFilters.is_connected;
+                    delete currentFilters.error_count;
+                }
+                currentPage = 1;
+                loadDataSources();
+            });
+
+            // 数据源类型切换
+            document.querySelectorAll('input[name="dataSourceType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    showConfigForType(this.value);
+                    updateTypeSelection(this.id);
+                });
+            });
+
+            // 点击模态框外部关闭
+            document.getElementById('addDataSourceModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAddDataSourceModal();
+                }
+            });
+
+            // 点击数据源详情模态框外部关闭
+            document.getElementById('dataSourceDetailModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDataSourceDetailModal();
+                }
+            });
+        }
+
+        // 加载数据源列表
+        async function loadDataSources() {
+            try {
+                const result = await dataSourceManager.getDataSources(currentPage, pageSize, currentFilters);
+                if (result.success) {
+                    renderDataSources(result.data);
+                    updateTotalCount(result.data.total);
+                    renderPagination(result.data);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('加载数据源失败:', error);
+                showError('加载数据源失败');
+            }
+        }
+
+        // 加载统计信息
+        async function loadStats() {
+            try {
+                const result = await dataSourceManager.getDataSourceStats();
+                if (result.success) {
+                    renderStats(result.data);
+                } else {
+                    console.error('加载统计信息失败:', result.message);
+                }
+            } catch (error) {
+                console.error('加载统计信息失败:', error);
+            }
+        }
+
+        // 渲染统计信息
+        function renderStats(stats) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="doubao-stat-card doubao-card-air doubao-animate-fade-in">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-air" style="margin-right: var(--doubao-space-16);">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="doubao-stat-value" style="color: var(--eco-air);">${stats.hj212}</div>
+                            <div class="doubao-stat-label">HJ212设备</div>
+                            <div class="doubao-stat-change ${stats.hj212 > 0 ? 'positive' : 'neutral'}">
+                                <i class="fas fa-broadcast-tower text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                ${stats.hj212 > 0 ? '设备在线' : '暂无设备'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doubao-stat-card doubao-card-water doubao-animate-fade-in doubao-animate-delay-100">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-water" style="margin-right: var(--doubao-space-16);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="doubao-stat-value" style="color: var(--eco-water);">${stats.database}</div>
+                            <div class="doubao-stat-label">数据库连接</div>
+                            <div class="doubao-stat-change ${stats.database > 0 ? 'positive' : 'neutral'}">
+                                <i class="fas fa-database text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                ${stats.database > 0 ? '连接正常' : '暂无连接'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doubao-stat-card doubao-card-soil doubao-animate-fade-in doubao-animate-delay-200">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-soil" style="margin-right: var(--doubao-space-16);">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="doubao-stat-value" style="color: var(--eco-soil);">${stats.file}</div>
+                            <div class="doubao-stat-label">文件数据源</div>
+                            <div class="doubao-stat-change ${stats.file > 0 ? 'positive' : 'neutral'}">
+                                <i class="fas fa-file-alt text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                ${stats.file > 0 ? '文件可用' : '暂无文件'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doubao-stat-card doubao-card-forest doubao-animate-fade-in doubao-animate-delay-300">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-forest" style="margin-right: var(--doubao-space-16);">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="doubao-stat-value" style="color: var(--eco-forest);">${stats.api}</div>
+                            <div class="doubao-stat-label">API接口</div>
+                            <div class="doubao-stat-change ${stats.error > 0 ? 'negative' : 'positive'}">
+                                <i class="fas ${stats.error > 0 ? 'fa-exclamation-triangle' : 'fa-check'} text-xs" style="margin-right: var(--doubao-space-4);"></i>
+                                ${stats.error > 0 ? `${stats.error}个异常` : '运行正常'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 渲染数据源列表
+        function renderDataSources(data) {
+            // 保存当前数据源数据
+            currentDataSources = data.list || [];
+
+            if (currentViewMode === 'card') {
+                renderCardView(currentDataSources);
+            } else {
+                renderListView(currentDataSources);
+            }
+        }
+
+        // 渲染列表视图
+        function renderListView(dataSources) {
+            const tbody = document.getElementById('dataSourceTableBody');
+            tbody.innerHTML = '';
+
+            if (!dataSources || dataSources.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--doubao-text-secondary);">
+                            <i class="fas fa-database" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                            <div>暂无数据源</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            dataSources.forEach(ds => {
+                const row = createDataSourceRow(ds);
+                tbody.appendChild(row);
+            });
+        }
+
+        // 创建数据源行
+        function createDataSourceRow(ds) {
+            const row = document.createElement('tr');
+            const config = ds.config || {};
+
+            row.innerHTML = `
+                <td>
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-${dataSourceManager.getDataSourceTheme(ds.type)}" style="width: 40px; height: 40px; margin-right: var(--doubao-space-12);">
+                            <i class="${dataSourceManager.getDataSourceIcon(ds.type)}"></i>
+                        </div>
+                        <div>
+                            <div class="doubao-text-md doubao-font-medium" style="color: var(--doubao-text-primary);">${ds.name}</div>
+                            <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">${ds.description || '无描述'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="doubao-tag doubao-tag-info">${dataSourceManager.formatDataSourceType(ds.type)}</span>
+                </td>
+                <td>
+                    <span class="doubao-tag doubao-tag-${dataSourceManager.getStatusTagType(ds.status, ds.is_connected)}">
+                        ${dataSourceManager.formatDataSourceStatus(ds.status, ds.is_connected)}
+                    </span>
+                </td>
+                <td>
+                    <div class="doubao-text-sm">
+                        ${getConnectionInfo(ds.type, config)}
+                    </div>
+                </td>
+                <td>
+                    <div class="doubao-text-sm">
+                        <div class="doubao-font-medium">-</div>
+                        <div style="color: var(--doubao-text-secondary);">条/天</div>
+                    </div>
+                </td>
+                <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">
+                    ${dataSourceManager.formatTimeAgo(ds.last_active_at)}
+                </td>
+                <td>
+                    <div class="doubao-flex doubao-items-center doubao-justify-center" style="gap: var(--doubao-space-8);">
+                        <button class="action-btn" title="查看详情" onclick="viewDataSource(${ds.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn warning" title="编辑" onclick="editDataSource(${ds.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn success" title="测试连接" onclick="testDataSourceConnection(${ds.id})">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button class="action-btn danger" title="删除" onclick="deleteDataSource(${ds.id}, '${ds.name}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            return row;
+        }
+
+        // 获取连接信息显示
+        function getConnectionInfo(type, config) {
+            switch (type) {
+                case 'hj212':
+                    return `
+                        <div>IP: ${config.host || 'N/A'}</div>
+                        <div style="color: var(--doubao-text-secondary);">端口: ${config.listen_port || 'N/A'}</div>
+                    `;
+                case 'database':
+                    return `
+                        <div>Host: ${config.host || 'N/A'}</div>
+                        <div style="color: var(--doubao-text-secondary);">DB: ${config.database || 'N/A'}</div>
+                    `;
+                case 'api':
+                    return `
+                        <div>${config.url || 'N/A'}</div>
+                        <div style="color: var(--doubao-text-secondary);">方法: ${config.method || 'GET'}</div>
+                    `;
+                case 'file':
+                    return `
+                        <div>${config.file_path || 'N/A'}</div>
+                        <div style="color: var(--doubao-text-secondary);">格式: ${config.file_format || 'N/A'}</div>
+                    `;
+                default:
+                    return '<div>N/A</div>';
+            }
+        }
+
+        // 渲染卡片视图
+        function renderCardView(dataSources = currentDataSources) {
+            const cardContainer = document.getElementById('cardView');
+
+            if (!dataSources || dataSources.length === 0) {
+                cardContainer.innerHTML = `
+                    <div class="doubao-col-span-2 doubao-text-center doubao-py-32">
+                        <div class="doubao-icon doubao-icon-lg doubao-icon-air doubao-mb-16" style="margin: 0 auto;">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="doubao-text-lg doubao-font-medium doubao-mb-8" style="color: var(--doubao-text-primary);">暂无数据源</h3>
+                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">点击上方"添加数据源"按钮创建第一个数据源</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const cardsHtml = dataSources.map(dataSource => {
+                const iconClass = getDataSourceIcon(dataSource.type);
+                const statusClass = dataSource.status === 'active' ? 'success' : 'danger';
+                const statusText = dataSource.status === 'active' ? '启用' : '禁用';
+                const connectionClass = dataSource.is_connected ? 'success' : 'warning';
+                const connectionText = dataSource.is_connected ? '已连接' : '未连接';
+
+                return `
+                    <div class="doubao-card doubao-card-air doubao-animate-fade-in hover:shadow-xl cursor-pointer transition-all" onclick="viewDataSource(${dataSource.id})">
+                        <div style="padding: var(--doubao-space-24);">
+                            <div class="doubao-flex doubao-items-start doubao-justify-between doubao-mb-16">
+                                <div class="doubao-flex doubao-items-center">
+                                    <div class="doubao-icon doubao-icon-${iconClass}" style="margin-right: var(--doubao-space-16);">
+                                        <i class="fas fa-${getDataSourceIcon(dataSource.type, true)}"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="doubao-text-lg doubao-font-semibold doubao-mb-4" style="color: var(--doubao-text-primary);">${dataSource.name}</h3>
+                                        <p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">${dataSource.description || '暂无描述'}</p>
+                                    </div>
+                                </div>
+                                <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                                    <span class="doubao-tag doubao-tag-${statusClass} doubao-tag-sm">${statusText}</span>
+                                    <div class="doubao-dropdown">
+                                        <button class="doubao-btn doubao-btn-ghost doubao-btn-sm doubao-btn-icon" onclick="event.stopPropagation();">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="doubao-dropdown-menu doubao-dropdown-menu-right">
+                                            <a class="doubao-dropdown-item" onclick="event.stopPropagation(); editDataSource(${dataSource.id})">
+                                                <i class="fas fa-edit doubao-mr-8"></i>编辑
+                                            </a>
+                                            <a class="doubao-dropdown-item" onclick="event.stopPropagation(); testConnection(${dataSource.id})">
+                                                <i class="fas fa-plug doubao-mr-8"></i>测试连接
+                                            </a>
+                                            <a class="doubao-dropdown-item" onclick="event.stopPropagation(); syncDataSourceData(${dataSource.id})">
+                                                <i class="fas fa-sync doubao-mr-8"></i>同步数据
+                                            </a>
+                                            <div class="doubao-dropdown-divider"></div>
+                                            <a class="doubao-dropdown-item doubao-text-danger" onclick="event.stopPropagation(); deleteDataSource(${dataSource.id})">
+                                                <i class="fas fa-trash doubao-mr-8"></i>删除
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="doubao-grid doubao-grid-cols-2 doubao-gap-16 doubao-mb-16">
+                                <div>
+                                    <div class="doubao-text-xs doubao-font-medium doubao-mb-4" style="color: var(--doubao-text-secondary);">类型</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-primary);">${getDataSourceTypeDisplay(dataSource.type)}</div>
+                                </div>
+                                <div>
+                                    <div class="doubao-text-xs doubao-font-medium doubao-mb-4" style="color: var(--doubao-text-secondary);">连接状态</div>
+                                    <span class="doubao-tag doubao-tag-${connectionClass} doubao-tag-sm">${connectionText}</span>
+                                </div>
+                                <div>
+                                    <div class="doubao-text-xs doubao-font-medium doubao-mb-4" style="color: var(--doubao-text-secondary);">数据记录</div>
+                                    <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-primary-500);">${formatNumber(dataSource.data_count || 0)}</div>
+                                </div>
+                                <div>
+                                    <div class="doubao-text-xs doubao-font-medium doubao-mb-4" style="color: var(--doubao-text-secondary);">最后同步</div>
+                                    <div class="doubao-text-sm" style="color: var(--doubao-text-primary);">${dataSource.last_sync_at ? formatRelativeTime(dataSource.last_sync_at) : '从未同步'}</div>
+                                </div>
+                            </div>
+
+                            <div class="doubao-flex doubao-items-center doubao-justify-between">
+                                <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">
+                                    错误: ${dataSource.error_count || 0} | 运行时间: ${(dataSource.uptime_percent || 0).toFixed(1)}%
+                                </div>
+                                <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                                    <button class="doubao-btn doubao-btn-ghost doubao-btn-xs" onclick="event.stopPropagation(); testConnection(${dataSource.id})">
+                                        <i class="fas fa-plug doubao-mr-4"></i>测试
+                                    </button>
+                                    <button class="doubao-btn doubao-btn-primary doubao-btn-xs" onclick="event.stopPropagation(); syncDataSourceData(${dataSource.id})">
+                                        <i class="fas fa-sync doubao-mr-4"></i>同步
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            cardContainer.innerHTML = cardsHtml;
+        }
+
+        // 获取数据源图标
+        function getDataSourceIcon(type, isIconName = false) {
+            const iconMap = {
+                'hj212': isIconName ? 'broadcast-tower' : 'air',
+                'database': isIconName ? 'database' : 'water',
+                'file': isIconName ? 'file-alt' : 'soil',
+                'api': isIconName ? 'link' : 'general'
+            };
+            return iconMap[type] || (isIconName ? 'question' : 'general');
+        }
+
+        // 更新总数显示
+        function updateTotalCount(total) {
+            document.getElementById('totalCount').textContent = `共 ${total} 个数据源`;
+        }
+
+        // 渲染分页
+        function renderPagination(data) {
+            const { total, page, page_size } = data;
+            const totalPages = Math.ceil(total / page_size);
+            const startIndex = (page - 1) * page_size + 1;
+            const endIndex = Math.min(page * page_size, total);
+
+            document.getElementById('paginationInfo').textContent =
+                `显示 ${startIndex}-${endIndex} 条，共 ${total} 条记录`;
+
+            const buttonsContainer = document.getElementById('paginationButtons');
+            buttonsContainer.innerHTML = '';
+
+            // 上一页按钮
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'doubao-btn doubao-btn-secondary doubao-btn-sm';
+            prevBtn.textContent = '上一页';
+            prevBtn.disabled = page <= 1;
+            prevBtn.onclick = () => changePage(page - 1);
+            buttonsContainer.appendChild(prevBtn);
+
+            // 页码按钮
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `doubao-btn doubao-btn-sm ${i === page ? 'doubao-btn-primary' : 'doubao-btn-secondary'}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => changePage(i);
+                buttonsContainer.appendChild(pageBtn);
+            }
+
+            // 下一页按钮
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'doubao-btn doubao-btn-secondary doubao-btn-sm';
+            nextBtn.textContent = '下一页';
+            nextBtn.disabled = page >= totalPages;
+            nextBtn.onclick = () => changePage(page + 1);
+            buttonsContainer.appendChild(nextBtn);
+        }
+
+        // 切换页面
+        function changePage(newPage) {
+            currentPage = newPage;
+            loadDataSources();
+        }
+
+        // 显示配置区域
+        function showConfigForType(type) {
+            // 隐藏所有配置区域
+            ['hj212Config', 'databaseConfig', 'apiConfig', 'fileConfig'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+
+            // 显示对应的配置区域
+            const configId = type + 'Config';
+            const configElement = document.getElementById(configId);
+            if (configElement) {
+                configElement.classList.remove('hidden');
+            }
+        }
+
+        // 更新类型选择样式
+        function updateTypeSelection(selectedId) {
+            document.querySelectorAll('label[for$="Type"]').forEach(label => {
+                label.classList.remove('border-primary-600', 'bg-primary-50');
+                label.classList.add('border-gray-200');
+            });
+
+            const selectedLabel = document.querySelector(`label[for="${selectedId}"]`);
+            if (selectedLabel) {
+                selectedLabel.classList.remove('border-gray-200');
+                selectedLabel.classList.add('border-primary-600', 'bg-primary-50');
+            }
+        }
+
+        // 打开添加数据源模态框
+        function openAddDataSourceModal() {
+            editingDataSourceId = null;
+            resetDataSourceForm();
+            document.getElementById('addDataSourceModal').querySelector('.modal-title').textContent = '添加数据源';
+            document.getElementById('addDataSourceModal').classList.remove('hidden');
+        }
+
+        // 关闭添加数据源模态框
+        function closeAddDataSourceModal() {
+            document.getElementById('addDataSourceModal').classList.add('hidden');
+            resetDataSourceForm();
+        }
+
+        // 重置表单
+        function resetDataSourceForm() {
+            document.getElementById('addDataSourceForm').reset();
+            document.querySelectorAll('input[name="dataSourceType"]').forEach(radio => {
+                radio.checked = false;
+            });
+            showConfigForType('');
+            updateTypeSelection('');
+        }
+
+        // 测试连接
+        async function testConnection() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+
+            try {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>测试中...';
+                button.disabled = true;
+
+                const formData = collectFormData();
+                if (!formData) return;
+
+                const result = await dataSourceManager.testDataSourceConfig(formData.type, formData.config);
+
+                if (result.success) {
+                    button.innerHTML = '<i class="fas fa-check mr-2"></i>连接成功';
+                    button.classList.remove('btn-warning');
+                    button.classList.add('btn-success');
+                    showSuccess('连接测试成功');
+                } else {
+                    button.innerHTML = '<i class="fas fa-times mr-2"></i>连接失败';
+                    button.classList.remove('btn-warning');
+                    button.classList.add('btn-danger');
+                    showError(result.message);
+                }
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success', 'btn-danger');
+                    button.classList.add('btn-warning');
+                    button.disabled = false;
+                }, 3000);
+            } catch (error) {
+                console.error('测试连接失败:', error);
+                showError('测试连接失败');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // 保存数据源
+        async function saveDataSource() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+
+            try {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+                button.disabled = true;
+
+                const formData = collectFormData();
+                if (!formData) return;
+
+                let result;
+                if (editingDataSourceId) {
+                    result = await dataSourceManager.updateDataSource(editingDataSourceId, formData);
+                } else {
+                    result = await dataSourceManager.createDataSource(formData);
+                }
+
+                if (result.success) {
+                    closeAddDataSourceModal();
+                    showSuccess(result.message);
+                    await loadDataSources();
+                    await loadStats();
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('保存数据源失败:', error);
+                showError('保存数据源失败');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // 收集表单数据
+        function collectFormData() {
+            const selectedType = document.querySelector('input[name="dataSourceType"]:checked');
+            if (!selectedType) {
+                showError('请选择数据源类型');
+                return null;
+            }
+
+            const name = document.getElementById('dataSourceName').value.trim();
+            const description = document.getElementById('dataSourceDescription').value.trim();
+
+            if (!name) {
+                showError('请输入数据源名称');
+                return null;
+            }
+
+            const type = selectedType.value;
+            const config = collectConfigData(type);
+
+            if (!config) {
+                return null;
+            }
+
+            return {
+                name,
+                description,
+                type,
+                config,
+                priority: 0
+            };
+        }
+
+        // 收集配置数据
+        function collectConfigData(type) {
+            const config = {};
+
+            switch (type) {
+                case 'hj212':
+                    config.host = document.getElementById('hj212Host').value.trim();
+                    config.listen_port = parseInt(document.getElementById('hj212Port').value) || 9001;
+                    config.protocol = document.getElementById('protocol').value || 'TCP';
+                    config.device_id = document.getElementById('deviceId').value.trim();
+
+                    if (!config.host) {
+                        showError('请输入设备IP地址');
+                        return null;
+                    }
+                    break;
+
+                case 'database':
+                    config.host = document.getElementById('dbHost').value.trim();
+                    config.port = parseInt(document.getElementById('dbPort').value) || 3306;
+                    config.database = document.getElementById('dbName').value.trim();
+                    config.username = document.getElementById('dbUsername').value.trim();
+                    config.password = document.getElementById('dbPassword').value;
+                    config.type = document.getElementById('dbType').value;
+
+                    if (!config.host || !config.database || !config.username) {
+                        showError('请填写完整的数据库连接信息');
+                        return null;
+                    }
+                    break;
+
+                case 'api':
+                    config.url = document.getElementById('apiUrl').value.trim();
+                    config.method = document.getElementById('apiMethod').value || 'GET';
+                    config.timeout = parseInt(document.getElementById('apiTimeout').value) || 30;
+
+                    if (!config.url) {
+                        showError('请输入API地址');
+                        return null;
+                    }
+                    break;
+
+                case 'file':
+                    config.file_path = document.getElementById('filePath').value.trim();
+                    config.file_format = document.getElementById('fileFormat').value || 'csv';
+                    config.encoding = document.getElementById('fileEncoding').value || 'utf-8';
+
+                    if (!config.file_path) {
+                        showError('请输入文件路径');
+                        return null;
+                    }
+                    break;
+
+                default:
+                    showError('不支持的数据源类型');
+                    return null;
+            }
+
+            return config;
+        }
+
+        // 编辑数据源
+        async function editDataSource(id) {
+            try {
+                const result = await dataSourceManager.getDataSource(id);
+                if (result.success) {
+                    editingDataSourceId = id;
+                    fillDataSourceForm(result.data);
+                    document.getElementById('addDataSourceModal').querySelector('.modal-title').textContent = '编辑数据源';
+                    document.getElementById('addDataSourceModal').classList.remove('hidden');
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('获取数据源详情失败:', error);
+                showError('获取数据源详情失败');
+            }
+        }
+
+        // 填充表单数据
+        function fillDataSourceForm(dataSource) {
+            resetDataSourceForm();
+
+            document.getElementById('dataSourceName').value = dataSource.name;
+            document.getElementById('dataSourceDescription').value = dataSource.description || '';
+
+            // 选择数据源类型
+            const typeRadio = document.querySelector(`input[name="dataSourceType"][value="${dataSource.type}"]`);
+            if (typeRadio) {
+                typeRadio.checked = true;
+                showConfigForType(dataSource.type);
+                updateTypeSelection(typeRadio.id);
+            }
+
+            // 填充配置数据
+            const config = dataSource.config || {};
+            fillConfigData(dataSource.type, config);
+        }
+
+        // 填充配置数据
+        function fillConfigData(type, config) {
+            switch (type) {
+                case 'hj212':
+                    if (document.getElementById('hj212Host')) document.getElementById('hj212Host').value = config.host || '';
+                    if (document.getElementById('hj212Port')) document.getElementById('hj212Port').value = config.listen_port || 9001;
+                    if (document.getElementById('protocol')) document.getElementById('protocol').value = config.protocol || 'TCP';
+                    if (document.getElementById('deviceId')) document.getElementById('deviceId').value = config.device_id || '';
+                    break;
+                case 'database':
+                    if (document.getElementById('dbType')) document.getElementById('dbType').value = config.type || 'mysql';
+                    if (document.getElementById('dbHost')) document.getElementById('dbHost').value = config.host || '';
+                    if (document.getElementById('dbPort')) document.getElementById('dbPort').value = config.port || 3306;
+                    if (document.getElementById('dbName')) document.getElementById('dbName').value = config.database || '';
+                    if (document.getElementById('dbUsername')) document.getElementById('dbUsername').value = config.username || '';
+                    if (document.getElementById('dbPassword')) document.getElementById('dbPassword').value = config.password || '';
+                    break;
+                case 'api':
+                    if (document.getElementById('apiUrl')) document.getElementById('apiUrl').value = config.url || '';
+                    if (document.getElementById('apiMethod')) document.getElementById('apiMethod').value = config.method || 'GET';
+                    if (document.getElementById('apiTimeout')) document.getElementById('apiTimeout').value = config.timeout || 30;
+                    break;
+                case 'file':
+                    if (document.getElementById('filePath')) document.getElementById('filePath').value = config.file_path || '';
+                    if (document.getElementById('fileFormat')) document.getElementById('fileFormat').value = config.file_format || 'csv';
+                    if (document.getElementById('fileEncoding')) document.getElementById('fileEncoding').value = config.encoding || 'utf-8';
+                    break;
+            }
+        }
+
+        // 删除数据源
+        async function deleteDataSource(id, name) {
+            if (!confirm(`确定要删除数据源"${name}"吗？此操作不可撤销。`)) {
+                return;
+            }
+
+            try {
+                const result = await dataSourceManager.deleteDataSource(id);
+                if (result.success) {
+                    showSuccess(result.message);
+                    await loadDataSources();
+                    await loadStats();
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('删除数据源失败:', error);
+                showError('删除数据源失败');
+            }
+        }
+
+        // 测试数据源连接
+        async function testDataSourceConnection(id) {
+            try {
+                const result = await dataSourceManager.testDataSource(id);
+                if (result.success) {
+                    showSuccess('连接测试成功');
+                    await loadDataSources(); // 刷新状态
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('测试连接失败:', error);
+                showError('测试连接失败');
+            }
+        }
+
+        // 查看数据源详情
+        async function viewDataSource(id) {
+            try {
+                const result = await dataSourceManager.getDataSource(id);
+                if (result.success) {
+                    showDataSourceDetail(result.data);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('获取数据源详情失败:', error);
+                showError('获取数据源详情失败');
+            }
+        }
+
+        // 显示数据源详情模态框
+        function showDataSourceDetail(dataSource) {
+            // 保存当前数据源ID用于操作
+            currentDetailDataSourceId = dataSource.id;
+
+            // 填充基本信息
+            document.getElementById('detail-name').textContent = dataSource.name;
+            document.getElementById('detail-type').textContent = getDataSourceTypeDisplay(dataSource.type);
+            document.getElementById('detail-description').textContent = dataSource.description || '暂无描述';
+
+            // 状态标签
+            const statusElement = document.getElementById('detail-status');
+            statusElement.innerHTML = `<span class="doubao-tag doubao-tag-${dataSource.status === 'active' ? 'success' : 'danger'}">${dataSource.status === 'active' ? '启用' : '禁用'}</span>`;
+
+            // 连接状态
+            const connectionElement = document.getElementById('detail-connection');
+            const isConnected = dataSource.is_connected;
+            connectionElement.innerHTML = `<span class="doubao-tag doubao-tag-${isConnected ? 'success' : 'warning'}">${isConnected ? '已连接' : '未连接'}</span>`;
+
+            // 填充配置信息
+            renderDataSourceConfig(dataSource);
+
+            // 填充统计信息
+            renderDataSourceStats(dataSource);
+
+            // 填充操作记录
+            renderDataSourceOperations(dataSource);
+
+            // 显示模态框
+            document.getElementById('dataSourceDetailModal').classList.remove('hidden');
+        }
+
+        // 渲染数据源配置信息
+        function renderDataSourceConfig(dataSource) {
+            const configContainer = document.getElementById('detail-config');
+            let configHtml = '';
+
+            if (dataSource.config) {
+                const config = typeof dataSource.config === 'string' ? JSON.parse(dataSource.config) : dataSource.config;
+
+                switch (dataSource.type) {
+                    case 'hj212':
+                        configHtml = `
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">设备ID</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.device_id || '-'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">监听端口</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.port || '-'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">协议版本</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.protocol_version || 'HJ212-2017'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">采集频率</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.collection_interval || 30}秒</p>
+                            </div>
+                        `;
+                        break;
+                    case 'database':
+                        configHtml = `
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">主机地址</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.host || '-'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">端口</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.port || '-'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">数据库名</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.database || '-'}</p>
+                            </div>
+                            <div>
+                                <label class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-secondary);">用户名</label>
+                                <p class="doubao-text-base" style="color: var(--doubao-text-primary); margin-top: 4px;">${config.username || '-'}</p>
+                            </div>
+                        `;
+                        break;
+                    default:
+                        configHtml = '<p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">暂无配置信息</p>';
+                }
+            } else {
+                configHtml = '<p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">暂无配置信息</p>';
+            }
+
+            configContainer.innerHTML = configHtml;
+        }
+
+        // 渲染统计信息
+        function renderDataSourceStats(dataSource) {
+            document.getElementById('detail-data-count').textContent = formatNumber(dataSource.data_count || 0);
+            document.getElementById('detail-last-sync').textContent = dataSource.last_sync_at ? formatRelativeTime(dataSource.last_sync_at) : '-';
+            document.getElementById('detail-error-count').textContent = dataSource.error_count || 0;
+            document.getElementById('detail-uptime').textContent = (dataSource.uptime_percent || 0).toFixed(1) + '%';
+        }
+
+        // 渲染操作记录
+        function renderDataSourceOperations(dataSource) {
+            const operationsContainer = document.getElementById('detail-operations');
+
+            // 模拟一些操作记录
+            const operations = [
+                { type: 'sync', time: new Date(Date.now() - 10 * 60 * 1000), status: 'success', message: '数据同步完成' },
+                { type: 'test', time: new Date(Date.now() - 2 * 60 * 60 * 1000), status: 'success', message: '连接测试成功' },
+                { type: 'update', time: new Date(Date.now() - 24 * 60 * 60 * 1000), status: 'success', message: '配置更新完成' }
+            ];
+
+            const operationsHtml = operations.map(op => `
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-py-8 doubao-border-b" style="border-color: var(--doubao-border);">
+                    <div class="doubao-flex doubao-items-center">
+                        <div class="doubao-icon doubao-icon-sm doubao-icon-${op.status === 'success' ? 'success' : 'danger'}" style="margin-right: var(--doubao-space-12);">
+                            <i class="fas fa-${getOperationIcon(op.type)}"></i>
+                        </div>
+                        <div>
+                            <div class="doubao-text-sm doubao-font-medium" style="color: var(--doubao-text-primary);">${op.message}</div>
+                            <div class="doubao-text-xs" style="color: var(--doubao-text-secondary);">${formatRelativeTime(op.time)}</div>
+                        </div>
+                    </div>
+                    <span class="doubao-tag doubao-tag-${op.status === 'success' ? 'success' : 'danger'} doubao-tag-sm">
+                        ${op.status === 'success' ? '成功' : '失败'}
+                    </span>
+                </div>
+            `).join('');
+
+            operationsContainer.innerHTML = operationsHtml || '<p class="doubao-text-sm" style="color: var(--doubao-text-secondary);">暂无操作记录</p>';
+        }
+
+        // 关闭数据源详情模态框
+        function closeDataSourceDetailModal() {
+            document.getElementById('dataSourceDetailModal').classList.add('hidden');
+        }
+
+        // 测试数据源连接
+        let currentDetailDataSourceId = null;
+        async function testDataSourceConnection() {
+            if (!currentDetailDataSourceId) return;
+
+            try {
+                const result = await dataSourceManager.testDataSource(currentDetailDataSourceId);
+                if (result.success) {
+                    showSuccess('连接测试成功');
+                    // 更新连接状态显示
+                    const connectionElement = document.getElementById('detail-connection');
+                    connectionElement.innerHTML = '<span class="doubao-tag doubao-tag-success">已连接</span>';
+                } else {
+                    showError(result.message || '连接测试失败');
+                }
+            } catch (error) {
+                console.error('连接测试失败:', error);
+                showError('连接测试失败');
+            }
+        }
+
+        // 同步数据源
+        async function syncDataSource() {
+            if (!currentDetailDataSourceId) return;
+
+            try {
+                const result = await dataSourceManager.syncDataSource(currentDetailDataSourceId);
+                if (result.success) {
+                    showSuccess('数据同步已启动');
+                    closeDataSourceDetailModal();
+                    await loadDataSources(); // 刷新列表
+                } else {
+                    showError(result.message || '数据同步失败');
+                }
+            } catch (error) {
+                console.error('数据同步失败:', error);
+                showError('数据同步失败');
+            }
+        }
+
+        // 工具函数
+        function getDataSourceTypeDisplay(type) {
+            const typeMap = {
+                'hj212': 'HJ212设备',
+                'database': '数据库',
+                'file': '文件',
+                'api': 'API接口'
+            };
+            return typeMap[type] || type;
+        }
+
+        function getOperationIcon(type) {
+            const iconMap = {
+                'sync': 'sync-alt',
+                'test': 'plug',
+                'update': 'edit',
+                'create': 'plus',
+                'delete': 'trash'
+            };
+            return iconMap[type] || 'info';
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function formatRelativeTime(date) {
+            const now = new Date();
+            const diffMs = now - new Date(date);
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '刚刚';
+            if (diffMins < 60) return `${diffMins}分钟前`;
+            if (diffHours < 24) return `${diffHours}小时前`;
+            if (diffDays < 7) return `${diffDays}天前`;
+            return new Date(date).toLocaleDateString();
+        }
+
+        // 刷新数据源
+        async function refreshDataSources() {
+            await loadDataSources();
+            await loadStats();
+        }
+
+        // 视图切换功能
+        function switchToCardView() {
+            currentViewMode = 'card';
+            document.getElementById('cardView').classList.remove('hidden');
+            document.getElementById('listView').classList.add('hidden');
+
+            document.getElementById('cardViewBtn').classList.add('active');
+            document.getElementById('listViewBtn').classList.remove('active');
+
+            // 渲染卡片视图
+            renderCardView();
+        }
+
+        function switchToListView() {
+            currentViewMode = 'list';
+            document.getElementById('cardView').classList.add('hidden');
+            document.getElementById('listView').classList.remove('hidden');
+
+            document.getElementById('cardViewBtn').classList.remove('active');
+            document.getElementById('listViewBtn').classList.add('active');
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        // 显示成功信息
+        function showSuccess(message) {
+            showMessage(message, 'success');
+        }
+
+        // 显示消息
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const isError = type === 'error';
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `
+                bg-${isError ? 'red' : 'green'}-50
+                border border-${isError ? 'red' : 'green'}-200
+                rounded-md p-4 mb-4
+            `;
+            messageEl.innerHTML = `
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${isError ? 'exclamation-circle text-red-400' : 'check-circle text-green-400'}"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-${isError ? 'red' : 'green'}-800">${message}</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-${isError ? 'red' : 'green'}-400 hover:text-${isError ? 'red' : 'green'}-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(messageEl);
+
+            // 自动隐藏
+            setTimeout(() => {
+                if (messageEl.parentElement) {
+                    messageEl.remove();
+                }
+            }, isError ? 5000 : 3000);
+        }
+    </script>
+</body>
+</html>

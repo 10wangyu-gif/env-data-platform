@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -30,7 +29,7 @@ type Collector struct {
 	upstreamStatus    *prometheus.CounterVec
 
 	// 连接指标
-	activeConnections *prometheus.Gauge
+	activeConnections prometheus.Gauge
 	connectionErrors  *prometheus.CounterVec
 
 	// 限流指标

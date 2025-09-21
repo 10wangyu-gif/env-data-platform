@@ -135,7 +135,7 @@ func main() {
 	}
 
 	// 创建HTTP服务器
-	router := setupRouter(config, gatewayHandler, gatewayRouter, authenticator, rateLimiter, metricsCollector, logger)
+	router := setupRouter(config, gatewayHandler, gatewayRouter, authenticator, rateLimiter, rateLimiterConfig, metricsCollector, logger)
 
 	server := &http.Server{
 		Addr:           config.GetServerAddress(),
@@ -235,6 +235,7 @@ func setupRouter(
 	gatewayRouter *gateway.Router,
 	authenticator *auth.Authenticator,
 	rateLimiter ratelimit.RateLimiter,
+	rateLimiterConfig *ratelimit.LimitConfig,
 	collector *metrics.Collector,
 	logger *zap.Logger,
 ) *gin.Engine {

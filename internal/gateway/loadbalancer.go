@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"crypto/md5"
 	"fmt"
 	"hash/crc32"
 	"math/rand"

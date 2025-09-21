@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/doubao-design.css">
+</head>
+<body style="background-color: var(--doubao-bg-page); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div class="doubao-flex doubao-h-full overflow-hidden">
+        <!-- 左侧导航 - 豆包风格 -->
+        <div class="doubao-sidebar" style="width: 280px;">
+            <div style="padding: var(--doubao-space-24); border-bottom: 1px solid var(--doubao-border);">
+                <h2 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">系统设置</h2>
+                <p class="doubao-text-sm" style="color: var(--doubao-text-secondary); margin-top: var(--doubao-space-4);">配置系统参数和选项</p>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto" style="padding: var(--doubao-space-16);">
+                <div class="doubao-space-y-8">
+                    <a href="#" onclick="showSettingPanel('basic')" 
+                       class="doubao-nav-item active doubao-flex doubao-items-center">
+                        <i class="fas fa-cog" style="margin-right: var(--doubao-space-12);"></i>
+                        基本设置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('database')" 
+                       class="doubao-nav-item doubao-flex doubao-items-center">
+                        <i class="fas fa-database" style="margin-right: var(--doubao-space-12);"></i>
+                        数据库配置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('security')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-shield-alt mr-3"></i>
+                        安全设置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('notification')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-bell mr-3"></i>
+                        通知配置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('backup')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-cloud-upload-alt mr-3"></i>
+                        备份设置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('integration')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-plug mr-3"></i>
+                        集成配置
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('performance')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        性能调优
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('logs')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-file-alt mr-3"></i>
+                        日志管理
+                    </a>
+                    
+                    <a href="#" onclick="showSettingPanel('users')" 
+                       class="setting-nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors">
+                        <i class="fas fa-users mr-3"></i>
+                        用户管理
+                    </a>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- 主内容区域 - 豆包风格 -->
+        <div class="flex-1 overflow-auto">
+            <!-- 基本设置面板 -->
+            <div id="basic-panel" class="setting-panel" style="padding: var(--doubao-space-24);">
+                <div class="doubao-mb-24">
+                    <h1 class="doubao-text-3xl doubao-font-semibold doubao-mb-8" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">基本设置</h1>
+                    <p class="doubao-text-base" style="color: var(--doubao-text-secondary);">配置系统的基本信息和常规参数</p>
+                </div>
+
+                <div class="doubao-space-y-24">
+                    <!-- 系统信息 -->
+                    <div class="doubao-card doubao-animate-fade-in">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">系统信息</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">系统名称</label>
+                                <input type="text" class="form-input" value="环保数据集成平台">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">系统版本</label>
+                                <input type="text" class="form-input" value="v1.0.0" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">管理员邮箱</label>
+                                <input type="email" class="form-input" value="admin@example.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">时区设置</label>
+                                <select class="form-select">
+                                    <option value="Asia/Shanghai" selected>中国标准时间 (UTC+8)</option>
+                                    <option value="UTC">协调世界时 (UTC+0)</option>
+                                    <option value="America/New_York">美国东部时间</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24);">
+                            <label class="form-label">系统描述</label>
+                            <textarea class="form-textarea" rows="3">专为生态环境领域设计的数据集成工具应用，支持HJ212协议数据接入、ETL流程处理、数据资产管理和API服务发布。</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 界面设置 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-100">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">界面设置</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">默认语言</label>
+                                <select class="form-select">
+                                    <option value="zh-CN" selected>简体中文</option>
+                                    <option value="en-US">English</option>
+                                    <option value="ja-JP">日本語</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">主题色彩</label>
+                                <div class="doubao-flex mt-2" style="gap: var(--doubao-space-12);">
+                                    <div class="w-8 h-8 rounded-lg cursor-pointer" style="background: var(--doubao-primary-500); border: 2px solid var(--doubao-primary-600);"></div>
+                                    <div class="w-8 h-8 rounded-lg cursor-pointer" style="background: var(--eco-forest); border: 2px solid transparent;"></div>
+                                    <div class="w-8 h-8 bg-purple-500 rounded-lg cursor-pointer border-2 border-transparent"></div>
+                                    <div class="w-8 h-8 bg-orange-500 rounded-lg cursor-pointer border-2 border-transparent"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-3" style="gap: var(--doubao-space-24); padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24);">
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用深色模式</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>显示系统通知</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);">
+                                <span>启用动画效果</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="doubao-flex doubao-justify-end" style="gap: var(--doubao-space-12);">
+                        <button class="doubao-btn doubao-btn-secondary">重置</button>
+                        <button class="doubao-btn doubao-btn-primary" onclick="saveSettings('basic')">保存设置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据库配置面板 -->
+            <div id="database-panel" class="setting-panel hidden" style="padding: var(--doubao-space-24);">
+                <div class="doubao-mb-24">
+                    <h1 class="doubao-text-3xl doubao-font-semibold doubao-mb-8" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">数据库配置</h1>
+                    <p class="doubao-text-base" style="color: var(--doubao-text-secondary);">管理系统数据库连接和配置参数</p>
+                </div>
+
+                <div class="doubao-space-y-24">
+                    <!-- 主数据库配置 -->
+                    <div class="doubao-card doubao-animate-fade-in">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">主数据库配置</h3>
+                            <div class="doubao-flex doubao-items-center doubao-space-x-8">
+                                <div class="w-3 h-3 rounded-full" style="background-color: var(--doubao-success);"></div>
+                                <span class="doubao-text-sm" style="color: var(--doubao-success);">连接正常</span>
+                            </div>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">数据库类型</label>
+                                <select class="form-select">
+                                    <option value="postgresql" selected>PostgreSQL</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="oracle">Oracle</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">主机地址</label>
+                                <input type="text" class="form-input" value="localhost">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">端口</label>
+                                <input type="number" class="form-input" value="5432">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">数据库名</label>
+                                <input type="text" class="form-input" value="environmental_data">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">用户名</label>
+                                <input type="text" class="form-input" value="env_user">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-input" value="••••••••">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: var(--doubao-space-16); display: flex; gap: var(--doubao-space-12); padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24);">
+                            <button class="doubao-btn doubao-btn-secondary" onclick="testConnection('main')">
+                                <i class="fas fa-plug" style="margin-right: var(--doubao-space-8);"></i>测试连接
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 连接池配置 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-100">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">连接池配置</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-3" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">初始连接数</label>
+                                <input type="number" class="form-input" value="10">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">最大连接数</label>
+                                <input type="number" class="form-input" value="100">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">最大空闲时间(分钟)</label>
+                                <input type="number" class="form-input" value="30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 备份数据库配置 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-200">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">备份数据库配置</h3>
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用读写分离</span>
+                            </label>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">读库地址</label>
+                                <input type="text" class="form-input" value="read-replica.example.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">端口</label>
+                                <input type="number" class="form-input" value="5432">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-flex doubao-justify-end" style="gap: var(--doubao-space-12);">
+                        <button class="doubao-btn doubao-btn-secondary">重置</button>
+                        <button class="doubao-btn doubao-btn-primary" onclick="saveSettings('database')">保存设置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安全设置面板 -->
+            <div id="security-panel" class="setting-panel hidden" style="padding: var(--doubao-space-24);">
+                <div class="doubao-mb-24">
+                    <h1 class="doubao-text-3xl doubao-font-semibold doubao-mb-8" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">安全设置</h1>
+                    <p class="doubao-text-base" style="color: var(--doubao-text-secondary);">配置系统安全策略和权限控制</p>
+                </div>
+
+                <div class="doubao-space-y-24">
+                    <!-- 密码策略 -->
+                    <div class="doubao-card doubao-animate-fade-in">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">密码策略</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">最小密码长度</label>
+                                <input type="number" class="form-input" value="8">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">密码有效期(天)</label>
+                                <input type="number" class="form-input" value="90">
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24); display: flex; flex-direction: column; gap: var(--doubao-space-12);">
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>必须包含大写字母</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>必须包含小写字母</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>必须包含数字</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);">
+                                <span>必须包含特殊字符</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 会话管理 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-100">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">会话管理</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-3" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">会话超时(分钟)</label>
+                                <input type="number" class="form-input" value="120">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">最大并发会话</label>
+                                <input type="number" class="form-input" value="1000">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">单用户最大会话</label>
+                                <input type="number" class="form-input" value="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API安全 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-200">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">API安全</h3>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">API Key有效期(天)</label>
+                                <input type="number" class="form-input" value="365">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">请求频率限制(/分钟)</label>
+                                <input type="number" class="form-input" value="1000">
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24); display: flex; flex-direction: column; gap: var(--doubao-space-12);">
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用HTTPS强制</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用CORS跨域控制</span>
+                            </label>
+                            
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);">
+                                <span>启用IP白名单</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="doubao-flex doubao-justify-end" style="gap: var(--doubao-space-12);">
+                        <button class="doubao-btn doubao-btn-secondary">重置</button>
+                        <button class="doubao-btn doubao-btn-primary" onclick="saveSettings('security')">保存设置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通知配置面板 -->
+            <div id="notification-panel" class="setting-panel hidden" style="padding: var(--doubao-space-24);">
+                <div class="doubao-mb-24">
+                    <h1 class="doubao-text-3xl doubao-font-semibold doubao-mb-8" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">通知配置</h1>
+                    <p class="doubao-text-base" style="color: var(--doubao-text-secondary);">配置系统通知渠道和消息模板</p>
+                </div>
+
+                <div class="doubao-space-y-24">
+                    <!-- 邮件配置 -->
+                    <div class="doubao-card doubao-animate-fade-in">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">邮件服务配置</h3>
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用邮件通知</span>
+                            </label>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">SMTP服务器</label>
+                                <input type="text" class="form-input" value="smtp.gmail.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">端口</label>
+                                <input type="number" class="form-input" value="587">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">用户名</label>
+                                <input type="text" class="form-input" value="system@example.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-input" value="••••••••">
+                            </div>
+                        </div>
+                        
+                        <div class="doubao-flex doubao-items-center" style="gap: var(--doubao-space-16); padding: 0 var(--doubao-space-24) var(--doubao-space-24) var(--doubao-space-24);">
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);" checked>
+                                <span>启用SSL/TLS</span>
+                            </label>
+                            
+                            <button class="doubao-btn doubao-btn-secondary" onclick="testNotification('email')">
+                                <i class="fas fa-paper-plane" style="margin-right: var(--doubao-space-8);"></i>发送测试邮件
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 短信配置 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-100">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">短信服务配置</h3>
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);">
+                                <span>启用短信通知</span>
+                            </label>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">服务提供商</label>
+                                <select class="form-select">
+                                    <option>阿里云短信</option>
+                                    <option>腾讯云短信</option>
+                                    <option>华为云短信</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Access Key</label>
+                                <input type="text" class="form-input" placeholder="请输入AccessKey">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Secret Key</label>
+                                <input type="password" class="form-input" placeholder="请输入SecretKey">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">签名名称</label>
+                                <input type="text" class="form-input" value="环保数据平台">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 企业微信配置 -->
+                    <div class="doubao-card doubao-animate-fade-in doubao-animate-delay-200">
+                        <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                            <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">企业微信配置</h3>
+                            <label class="doubao-flex doubao-items-center">
+                                <input type="checkbox" style="margin-right: var(--doubao-space-8);">
+                                <span>启用企业微信通知</span>
+                            </label>
+                        </div>
+                        <div class="doubao-grid doubao-grid-cols-1 md:grid-cols-2" style="gap: var(--doubao-space-24); padding: var(--doubao-space-24);">
+                            <div class="form-group">
+                                <label class="form-label">企业ID</label>
+                                <input type="text" class="form-input" placeholder="请输入企业ID">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">应用Secret</label>
+                                <input type="password" class="form-input" placeholder="请输入应用Secret">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">应用ID</label>
+                                <input type="text" class="form-input" placeholder="请输入应用ID">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">部门ID</label>
+                                <input type="text" class="form-input" placeholder="@all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="doubao-flex doubao-justify-end" style="gap: var(--doubao-space-12);">
+                        <button class="doubao-btn doubao-btn-secondary">重置</button>
+                        <button class="doubao-btn doubao-btn-primary" onclick="saveSettings('notification')">保存设置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理面板 -->
+            <div id="users-panel" class="setting-panel hidden" style="padding: var(--doubao-space-24);">
+                <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-24">
+                    <div>
+                        <h1 class="doubao-text-3xl doubao-font-semibold doubao-mb-8" style="background: linear-gradient(135deg, var(--doubao-primary-500) 0%, var(--doubao-primary-600) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">用户管理</h1>
+                        <p class="doubao-text-base" style="color: var(--doubao-text-secondary);">管理系统用户和权限分配</p>
+                    </div>
+                    <button class="doubao-btn doubao-btn-primary" onclick="openAddUserModal()">
+                        <i class="fas fa-plus" style="margin-right: var(--doubao-space-8);"></i>添加用户
+                    </button>
+                </div>
+
+                <!-- 用户列表 -->
+                <div class="doubao-card doubao-animate-fade-in">
+                    <div class="doubao-flex doubao-items-center doubao-justify-between doubao-mb-16" style="padding: var(--doubao-space-24) var(--doubao-space-24) 0 var(--doubao-space-24);">
+                        <h3 class="doubao-text-lg doubao-font-semibold" style="color: var(--doubao-text-primary);">用户列表</h3>
+                        <div class="doubao-flex" style="gap: var(--doubao-space-12);">
+                            <input type="text" placeholder="搜索用户..." class="form-input doubao-text-sm w-64">
+                            <select class="form-select doubao-text-sm w-32">
+                                <option>所有角色</option>
+                                <option>管理员</option>
+                                <option>数据工程师</option>
+                                <option>环保专家</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto" style="padding: var(--doubao-space-24);">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>用户</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>最后登录</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" 
+                                                 alt="头像" class="w-8 h-8 rounded-full" style="margin-right: var(--doubao-space-12);">
+                                            <div>
+                                                <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">张工程师</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">zhang@example.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="doubao-tag doubao-tag-primary">数据工程师</span></td>
+                                    <td><span class="status-indicator status-online">在线</span></td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">2分钟前</td>
+                                    <td>
+                                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b35c?w=32&h=32&fit=crop&crop=face" 
+                                                 alt="头像" class="w-8 h-8 rounded-full" style="margin-right: var(--doubao-space-12);">
+                                            <div>
+                                                <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">李专家</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">li@example.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="doubao-tag doubao-tag-success">环保专家</span></td>
+                                    <td><span class="status-indicator status-offline">离线</span></td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">1小时前</td>
+                                    <td>
+                                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <div class="doubao-flex doubao-items-center">
+                                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                                                 alt="头像" class="w-8 h-8 rounded-full" style="margin-right: var(--doubao-space-12);">
+                                            <div>
+                                                <div class="doubao-font-medium" style="color: var(--doubao-text-primary);">王运维</div>
+                                                <div class="doubao-text-sm" style="color: var(--doubao-text-secondary);">wang@example.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="doubao-tag doubao-tag-warning">运维人员</span></td>
+                                    <td><span class="status-indicator status-online">在线</span></td>
+                                    <td class="doubao-text-sm" style="color: var(--doubao-text-secondary);">30分钟前</td>
+                                    <td>
+                                        <div class="doubao-flex" style="gap: var(--doubao-space-8);">
+                                            <button style="color: var(--doubao-primary-500);" class="hover:opacity-80" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button style="color: var(--doubao-danger);" class="hover:opacity-80" title="删除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用户模态框 -->
+    <div id="addUserModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">添加用户</h3>
+                <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-input" placeholder="请输入用户名" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-input" placeholder="请输入邮箱地址" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">角色</label>
+                        <select class="form-select" required>
+                            <option value="">请选择角色</option>
+                            <option value="admin">管理员</option>
+                            <option value="engineer">数据工程师</option>
+                            <option value="expert">环保专家</option>
+                            <option value="operator">运维人员</option>
+                            <option value="viewer">只读用户</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">初始密码</label>
+                        <input type="password" class="form-input" placeholder="请输入初始密码" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-textarea" rows="2" placeholder="用户备注信息"></textarea>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="closeAddUserModal()" class="btn btn-secondary">取消</button>
+                <button onclick="saveUser()" class="btn btn-primary">创建用户</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示设置面板
+        function showSettingPanel(panel) {
+            // 隐藏所有面板
+            const panels = document.querySelectorAll('.setting-panel');
+            panels.forEach(p => p.classList.add('hidden'));
+            
+            // 显示目标面板
+            document.getElementById(panel + '-panel').classList.remove('hidden');
+            
+            // 更新导航状态
+            const navItems = document.querySelectorAll('.setting-nav-item');
+            navItems.forEach(item => item.classList.remove('active', 'bg-primary-50', 'text-primary-700'));
+            event.target.closest('.setting-nav-item').classList.add('active', 'bg-primary-50', 'text-primary-700');
+        }
+        
+        // 保存设置
+        function saveSettings(type) {
+            const messages = {
+                'basic': '基本设置保存成功！',
+                'database': '数据库配置保存成功！',
+                'security': '安全设置保存成功！',
+                'notification': '通知配置保存成功！'
+            };
+            
+            // 模拟保存过程
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                button.textContent = originalText;
+                alert(messages[type] || '设置保存成功！');
+            }, 1500);
+        }
+        
+        // 测试连接
+        function testConnection(type) {
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>测试中...';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check mr-2"></i>连接成功';
+                button.classList.remove('btn-secondary');
+                button.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-secondary');
+                }, 2000);
+            }, 2000);
+        }
+        
+        // 测试通知
+        function testNotification(type) {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>发送中...';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = originalText;
+                alert('测试通知发送成功，请检查邮箱！');
+            }, 2000);
+        }
+        
+        // 打开添加用户模态框
+        function openAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('hidden');
+        }
+        
+        // 关闭添加用户模态框
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+        }
+        
+        // 保存用户
+        function saveUser() {
+            alert('用户创建成功！');
+            closeAddUserModal();
+        }
+        
+        // 导航样式
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.setting-nav-item');
+            navItems.forEach(item => {
+                item.classList.add('text-gray-700', 'hover:text-primary-600', 'hover:bg-primary-50');
+            });
+            
+            // 设置默认激活状态
+            const activeItem = document.querySelector('.setting-nav-item.active');
+            if (activeItem) {
+                activeItem.classList.add('bg-primary-50', 'text-primary-700');
+            }
+        });
+        
+        // 模态框外部点击关闭
+        document.getElementById('addUserModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddUserModal();
+            }
+        });
+    </script>
+</body>
+</html>

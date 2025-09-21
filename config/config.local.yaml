@@ -1,0 +1,116 @@
+# 开发环境配置
+app:
+  name: "环保数据集成平台"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+
+server:
+  host: "0.0.0.0"
+  port: 8888
+  mode: "debug"
+  read_timeout: 60
+  write_timeout: 60
+  idle_timeout: 60
+  tls:
+    enabled: false
+
+database:
+  driver: "mysql"
+  host: "localhost"
+  port: 3306
+  name: "env_data_platform"
+  username: "root"
+  password: ""
+  charset: "utf8mb4"
+  parse_time: true
+  loc: "Asia%2FShanghai"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600s
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+  min_idle_conns: 5
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  pool_timeout: 4s
+
+jwt:
+  secret: "dev_jwt_secret_key_change_in_production"
+  expire: 24h
+  issuer: "env-data-platform"
+
+log:
+  level: "debug"
+  format: "console"
+  output: "both"
+  filename: "logs/app.log"
+  max_size: 100
+  max_backups: 7
+  max_age: 30
+  compress: true
+
+cors:
+  allow_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+    - "OPTIONS"
+  allow_headers:
+    - "Origin"
+    - "Content-Type"
+    - "Accept"
+    - "Authorization"
+    - "X-Requested-With"
+  expose_headers:
+    - "Content-Length"
+  allow_credentials: true
+  max_age: 12h
+
+rate_limit:
+  enabled: true
+  requests_per_minute: 100
+  burst: 20
+
+file_upload:
+  max_size: 100MB
+  allowed_types:
+    - ".xlsx"
+    - ".xls"
+    - ".csv"
+    - ".txt"
+    - ".json"
+    - ".xml"
+  upload_path: "uploads"
+
+hj212:
+  enabled: true
+  tcp_port: 8212
+  buffer_size: 4096
+  timeout: 30s
+  max_connections: 1000
+
+etl:
+  hop_home: "/opt/hop"
+  max_concurrent_jobs: 5
+  job_timeout: 3600s
+  temp_path: "temp/etl"
+
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    path: "/metrics"
+  health_check:
+    enabled: true
+    path: "/health"

@@ -229,7 +229,7 @@ func (fwl *FixedWindowLimiter) Allow(ctx context.Context, key string) (bool, err
 	window := now.Truncate(fwl.window).Unix()
 	windowKey := fmt.Sprintf("%s:%d", key, window)
 
-	pipe := swl.redis.Pipeline()
+	pipe := fwl.redis.Pipeline()
 	pipe.Incr(ctx, windowKey)
 	pipe.Expire(ctx, windowKey, fwl.window)
 

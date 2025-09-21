@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -19,7 +18,7 @@ type AuthStrategy string
 
 const (
 	NoAuth     AuthStrategy = "none"
-	APIKey     AuthStrategy = "apikey"
+	APIKeyAuth AuthStrategy = "apikey"
 	JWT        AuthStrategy = "jwt"
 	BasicAuth  AuthStrategy = "basic"
 	OAuth2     AuthStrategy = "oauth2"
@@ -85,7 +84,7 @@ func (a *Authenticator) Middleware() gin.HandlerFunc {
 		case NoAuth:
 			c.Next()
 			return
-		case APIKey:
+		case APIKeyAuth:
 			if err := a.validateAPIKey(c); err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error": "unauthorized",

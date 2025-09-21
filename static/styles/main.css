@@ -1,0 +1,880 @@
+/* 环保数据集成平台 - Ant Design 风格样式 */
+
+/* ===== Ant Design 颜色体系 ===== */
+:root {
+    /* Primary Colors */
+    --ant-primary-color: #1890ff;
+    --ant-primary-1: #e6f7ff;
+    --ant-primary-2: #bae7ff;
+    --ant-primary-3: #91d5ff;
+    --ant-primary-4: #69c0ff;
+    --ant-primary-5: #40a9ff;
+    --ant-primary-6: #1890ff;
+    --ant-primary-7: #096dd9;
+    --ant-primary-8: #0050b3;
+    --ant-primary-9: #003a8c;
+    --ant-primary-10: #002766;
+    
+    /* Success Colors */
+    --ant-success-color: #52c41a;
+    --ant-success-1: #f6ffed;
+    --ant-success-2: #d9f7be;
+    --ant-success-3: #b7eb8f;
+    --ant-success-4: #95de64;
+    --ant-success-5: #73d13d;
+    --ant-success-6: #52c41a;
+    --ant-success-7: #389e0d;
+    --ant-success-8: #237804;
+    --ant-success-9: #135200;
+    --ant-success-10: #092b00;
+    
+    /* Warning Colors */
+    --ant-warning-color: #faad14;
+    --ant-warning-1: #fffbe6;
+    --ant-warning-2: #fff1b8;
+    --ant-warning-3: #ffe58f;
+    --ant-warning-4: #ffd666;
+    --ant-warning-5: #ffc53d;
+    --ant-warning-6: #faad14;
+    --ant-warning-7: #d48806;
+    --ant-warning-8: #ad6800;
+    --ant-warning-9: #874d00;
+    --ant-warning-10: #613400;
+    
+    /* Error Colors */
+    --ant-error-color: #ff4d4f;
+    --ant-error-1: #fff2f0;
+    --ant-error-2: #ffccc7;
+    --ant-error-3: #ffa39e;
+    --ant-error-4: #ff7875;
+    --ant-error-5: #ff4d4f;
+    --ant-error-6: #f5222d;
+    --ant-error-7: #cf1322;
+    --ant-error-8: #a8071a;
+    --ant-error-9: #820014;
+    --ant-error-10: #5c0011;
+    
+    /* Gray Colors */
+    --ant-gray-1: #ffffff;
+    --ant-gray-2: #fafafa;
+    --ant-gray-3: #f5f5f5;
+    --ant-gray-4: #f0f0f0;
+    --ant-gray-5: #d9d9d9;
+    --ant-gray-6: #bfbfbf;
+    --ant-gray-7: #8c8c8c;
+    --ant-gray-8: #595959;
+    --ant-gray-9: #434343;
+    --ant-gray-10: #262626;
+    --ant-gray-11: #1f1f1f;
+    --ant-gray-12: #141414;
+    --ant-gray-13: #000000;
+    
+    /* Environmental Theme Colors */
+    --env-air-color: #1890ff;
+    --env-water-color: #13c2c2;
+    --env-soil-color: #faad14;
+    --env-noise-color: #722ed1;
+    
+    /* Component specific */
+    --ant-border-radius-base: 6px;
+    --ant-border-radius-sm: 4px;
+    --ant-border-radius-lg: 8px;
+    --ant-box-shadow-base: 0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px 0 rgba(0,0,0,.08), 0 9px 28px 8px rgba(0,0,0,.05);
+    --ant-box-shadow-sm: 0 2px 8px rgba(0,0,0,.15);
+    --ant-border-color-base: #d9d9d9;
+    --ant-border-color-split: #f0f0f0;
+}
+
+/* ===== 导航菜单样式 ===== */
+.nav-item {
+    @apply flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer;
+    color: var(--ant-gray-8);
+    border: 1px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: var(--ant-primary-1);
+    color: var(--ant-primary-6);
+}
+
+.nav-item.active {
+    background-color: var(--ant-primary-1);
+    color: var(--ant-primary-6);
+    border-color: var(--ant-primary-3);
+    font-weight: 600;
+}
+
+.nav-item .nav-icon {
+    @apply mr-3;
+    font-size: 16px;
+}
+
+/* ===== 卡片样式 ===== */
+.card {
+    background: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-split);
+    border-radius: var(--ant-border-radius-base);
+    box-shadow: var(--ant-box-shadow-sm);
+    @apply p-6 transition-shadow duration-300;
+}
+
+.card:hover {
+    box-shadow: var(--ant-box-shadow-base);
+}
+
+.card-header {
+    @apply flex items-center justify-between pb-4 mb-6;
+    border-bottom: 1px solid var(--ant-border-color-split);
+}
+
+.card-title {
+    @apply text-lg font-semibold;
+    color: var(--ant-gray-10);
+    line-height: 1.5;
+}
+
+.card-subtitle {
+    @apply text-sm mt-1;
+    color: var(--ant-gray-7);
+}
+
+/* ===== 按钮样式 ===== */
+.btn {
+    @apply inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer select-none;
+    border: 1px solid transparent;
+    min-height: 32px;
+    outline: none;
+    position: relative;
+    user-select: none;
+}
+
+.btn:focus {
+    @apply outline-none;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+}
+
+.btn-primary {
+    background-color: var(--ant-primary-6);
+    border-color: var(--ant-primary-6);
+    color: var(--ant-gray-1);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--ant-primary-5);
+    border-color: var(--ant-primary-5);
+}
+
+.btn-primary:active {
+    background-color: var(--ant-primary-7);
+    border-color: var(--ant-primary-7);
+}
+
+.btn-secondary {
+    background-color: var(--ant-gray-1);
+    border-color: var(--ant-border-color-base);
+    color: var(--ant-gray-8);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    color: var(--ant-primary-6);
+    border-color: var(--ant-primary-6);
+}
+
+.btn-secondary:active {
+    color: var(--ant-primary-7);
+    border-color: var(--ant-primary-7);
+}
+
+.btn-success {
+    background-color: var(--ant-success-6);
+    border-color: var(--ant-success-6);
+    color: var(--ant-gray-1);
+}
+
+.btn-success:hover:not(:disabled) {
+    background-color: var(--ant-success-5);
+    border-color: var(--ant-success-5);
+}
+
+.btn-warning {
+    background-color: var(--ant-warning-6);
+    border-color: var(--ant-warning-6);
+    color: var(--ant-gray-1);
+}
+
+.btn-warning:hover:not(:disabled) {
+    background-color: var(--ant-warning-5);
+    border-color: var(--ant-warning-5);
+}
+
+.btn-danger {
+    background-color: var(--ant-error-5);
+    border-color: var(--ant-error-5);
+    color: var(--ant-gray-1);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--ant-error-4);
+    border-color: var(--ant-error-4);
+}
+
+.btn-danger:active {
+    background-color: var(--ant-error-6);
+    border-color: var(--ant-error-6);
+}
+
+/* 按钮尺寸变体 */
+.btn-sm {
+    @apply px-3 py-1.5 text-xs;
+    min-height: 24px;
+}
+
+.btn-lg {
+    @apply px-6 py-3 text-base;
+    min-height: 40px;
+}
+
+/* ===== 表单样式 ===== */
+.form-input {
+    @apply w-full px-3 py-2 text-sm transition-all duration-200;
+    background-color: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-base);
+    border-radius: var(--ant-border-radius-sm);
+    color: var(--ant-gray-8);
+    line-height: 1.5715;
+    min-height: 32px;
+}
+
+.form-input:hover {
+    border-color: var(--ant-primary-5);
+}
+
+.form-input:focus {
+    border-color: var(--ant-primary-6);
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    outline: none;
+}
+
+.form-input:disabled {
+    background-color: var(--ant-gray-3);
+    color: var(--ant-gray-6);
+    cursor: not-allowed;
+}
+
+.form-select {
+    @apply w-full px-3 py-2 text-sm transition-all duration-200 cursor-pointer;
+    background-color: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-base);
+    border-radius: var(--ant-border-radius-sm);
+    color: var(--ant-gray-8);
+    line-height: 1.5715;
+    min-height: 32px;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 32px;
+}
+
+.form-select:hover {
+    border-color: var(--ant-primary-5);
+}
+
+.form-select:focus {
+    border-color: var(--ant-primary-6);
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    outline: none;
+}
+
+.form-textarea {
+    @apply w-full px-3 py-2 text-sm transition-all duration-200 resize-none;
+    background-color: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-base);
+    border-radius: var(--ant-border-radius-sm);
+    color: var(--ant-gray-8);
+    line-height: 1.5715;
+    min-height: 32px;
+}
+
+.form-textarea:hover {
+    border-color: var(--ant-primary-5);
+}
+
+.form-textarea:focus {
+    border-color: var(--ant-primary-6);
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    outline: none;
+}
+
+.form-group {
+    @apply mb-4;
+}
+
+.form-label {
+    @apply block text-sm font-medium mb-2;
+    color: var(--ant-gray-10);
+    line-height: 1.5715;
+}
+
+.form-help {
+    @apply text-xs mt-1;
+    color: var(--ant-gray-7);
+}
+
+.form-error {
+    @apply text-xs mt-1;
+    color: var(--ant-error-5);
+}
+
+/* ===== 表格样式 ===== */
+.table {
+    @apply w-full text-sm;
+    border-collapse: collapse;
+    background-color: var(--ant-gray-1);
+}
+
+.table th {
+    @apply font-medium text-left px-4 py-3;
+    background-color: var(--ant-gray-2);
+    border-bottom: 1px solid var(--ant-border-color-split);
+    color: var(--ant-gray-10);
+    font-weight: 500;
+    text-align: left;
+}
+
+.table td {
+    @apply px-4 py-3;
+    border-bottom: 1px solid var(--ant-border-color-split);
+    color: var(--ant-gray-8);
+    transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+    background-color: var(--ant-gray-2);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== 标签样式 ===== */
+.tag {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.tag-primary {
+    background-color: var(--ant-primary-1);
+    color: var(--ant-primary-7);
+    border: 1px solid var(--ant-primary-3);
+}
+
+.tag-success {
+    background-color: var(--ant-success-1);
+    color: var(--ant-success-7);
+    border: 1px solid var(--ant-success-3);
+}
+
+.tag-warning {
+    background-color: var(--ant-warning-1);
+    color: var(--ant-warning-7);
+    border: 1px solid var(--ant-warning-3);
+}
+
+.tag-danger {
+    background-color: var(--ant-error-1);
+    color: var(--ant-error-7);
+    border: 1px solid var(--ant-error-3);
+}
+
+.tag-secondary {
+    background-color: var(--ant-gray-3);
+    color: var(--ant-gray-8);
+    border: 1px solid var(--ant-gray-5);
+}
+
+/* ===== 统计卡片样式 ===== */
+.stat-card {
+    background: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-split);
+    border-radius: var(--ant-border-radius-base);
+    box-shadow: var(--ant-box-shadow-sm);
+    @apply p-6 transition-all duration-300;
+}
+
+.stat-card:hover {
+    box-shadow: var(--ant-box-shadow-base);
+    transform: translateY(-1px);
+}
+
+.stat-value {
+    @apply text-2xl font-bold leading-none;
+    color: var(--ant-gray-10);
+}
+
+.stat-label {
+    @apply text-sm mt-2;
+    color: var(--ant-gray-7);
+}
+
+.stat-change {
+    @apply text-xs mt-1 flex items-center;
+}
+
+.stat-change.positive {
+    color: var(--ant-success-6);
+}
+
+.stat-change.negative {
+    color: var(--ant-error-5);
+}
+
+/* ===== 环保主题图标样式 ===== */
+.env-icon {
+    @apply flex items-center justify-center w-12 h-12 rounded-lg;
+    font-size: 24px;
+}
+
+.env-icon.air {
+    background-color: rgba(24, 144, 255, 0.1);
+    color: var(--env-air-color);
+}
+
+.env-icon.water {
+    background-color: rgba(19, 194, 194, 0.1);
+    color: var(--env-water-color);
+}
+
+.env-icon.soil {
+    background-color: rgba(250, 173, 20, 0.1);
+    color: var(--env-soil-color);
+}
+
+.env-icon.noise {
+    background-color: rgba(114, 46, 209, 0.1);
+    color: var(--env-noise-color);
+}
+
+/* ===== 环保主题卡片样式 ===== */
+.env-card {
+    background: var(--ant-gray-1);
+    border: 1px solid var(--ant-border-color-split);
+    border-radius: var(--ant-border-radius-lg);
+    box-shadow: var(--ant-box-shadow-sm);
+    @apply transition-all duration-300 cursor-pointer;
+    overflow: hidden;
+}
+
+.env-card:hover {
+    box-shadow: var(--ant-box-shadow-base);
+    transform: translateY(-2px);
+    border-color: var(--ant-primary-4);
+}
+
+/* ===== 模态框样式 ===== */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+}
+
+.modal-content {
+    background: var(--ant-gray-1);
+    border-radius: var(--ant-border-radius-lg);
+    box-shadow: var(--ant-box-shadow-base);
+    @apply w-full max-w-2xl max-h-full overflow-hidden;
+}
+
+.modal-header {
+    @apply flex items-center justify-between p-6;
+    border-bottom: 1px solid var(--ant-border-color-split);
+}
+
+.modal-title {
+    @apply text-lg font-semibold;
+    color: var(--ant-gray-10);
+}
+
+.modal-body {
+    @apply p-6 overflow-y-auto;
+    max-height: calc(80vh - 120px);
+}
+
+.modal-footer {
+    @apply flex justify-end space-x-3 p-6;
+    border-top: 1px solid var(--ant-border-color-split);
+}
+
+/* ===== 状态指示器 ===== */
+.status-indicator {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.status-indicator.status-online {
+    background-color: var(--ant-success-1);
+    color: var(--ant-success-7);
+}
+
+.status-indicator.status-offline {
+    background-color: var(--ant-gray-3);
+    color: var(--ant-gray-7);
+}
+
+.status-indicator.status-warning {
+    background-color: var(--ant-warning-1);
+    color: var(--ant-warning-7);
+}
+
+.status-indicator.status-error {
+    background-color: var(--ant-error-1);
+    color: var(--ant-error-7);
+}
+
+/* ===== 进度条样式 ===== */
+.progress {
+    @apply w-full bg-gray-200 rounded-full h-2;
+    background-color: var(--ant-gray-3);
+}
+
+.progress-bar {
+    @apply h-2 rounded-full transition-all duration-300;
+    background-color: var(--ant-primary-6);
+}
+
+.progress-bar.success {
+    background-color: var(--ant-success-6);
+}
+
+.progress-bar.warning {
+    background-color: var(--ant-warning-6);
+}
+
+.progress-bar.danger {
+    background-color: var(--ant-error-5);
+}
+
+/* ===== 工具提示样式 ===== */
+.tooltip {
+    @apply absolute z-10 px-3 py-2 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none;
+    background-color: var(--ant-gray-11);
+    color: var(--ant-gray-1);
+    border-radius: var(--ant-border-radius-sm);
+}
+
+/* ===== 面包屑导航样式 ===== */
+.breadcrumb {
+    @apply flex items-center space-x-2 text-sm;
+}
+
+.breadcrumb-item {
+    @apply flex items-center;
+    color: var(--ant-gray-7);
+}
+
+.breadcrumb-item:last-child {
+    color: var(--ant-gray-10);
+    font-weight: 500;
+}
+
+.breadcrumb-separator {
+    @apply mx-2;
+    color: var(--ant-gray-5);
+}
+
+/* ===== 分页样式 ===== */
+.pagination {
+    @apply flex items-center justify-center space-x-1;
+}
+
+.pagination-item {
+    @apply flex items-center justify-center w-8 h-8 text-sm border rounded cursor-pointer transition-all duration-200;
+    border-color: var(--ant-border-color-base);
+    color: var(--ant-gray-8);
+}
+
+.pagination-item:hover {
+    border-color: var(--ant-primary-6);
+    color: var(--ant-primary-6);
+}
+
+.pagination-item.active {
+    background-color: var(--ant-primary-6);
+    border-color: var(--ant-primary-6);
+    color: var(--ant-gray-1);
+}
+
+.pagination-item:disabled {
+    @apply cursor-not-allowed opacity-50;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 768px) {
+    .card {
+        @apply p-4;
+    }
+    
+    .modal-content {
+        @apply mx-2;
+    }
+    
+    .stat-card {
+        @apply p-4;
+    }
+}
+
+/* ===== 自定义滚动条 ===== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--ant-gray-3);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--ant-gray-5);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--ant-gray-6);
+}
+.table {
+    @apply w-full border-collapse;
+}
+
+.table th {
+    @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50;
+}
+
+.table td {
+    @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-200;
+}
+
+.table tbody tr:hover {
+    @apply bg-gray-50;
+}
+
+/* 状态指示器 */
+.status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-online {
+    @apply bg-green-100 text-green-800;
+}
+
+.status-offline {
+    @apply bg-red-100 text-red-800;
+}
+
+.status-warning {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-processing {
+    @apply bg-blue-100 text-blue-800;
+}
+
+/* 统计卡片 */
+.stat-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+}
+
+.stat-card .stat-value {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.stat-card .stat-label {
+    @apply text-sm text-gray-500 mt-1;
+}
+
+.stat-card .stat-change {
+    @apply text-sm font-medium mt-2;
+}
+
+.stat-change.positive {
+    @apply text-green-600;
+}
+
+.stat-change.negative {
+    @apply text-red-600;
+}
+
+/* 图表容器 */
+.chart-container {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+}
+
+.chart-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.chart-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+/* 表单样式 */
+.form-group {
+    @apply mb-4;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+}
+
+.form-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+}
+
+.form-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-vertical;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-lg w-full m-4;
+}
+
+.modal-header {
+    @apply px-6 py-4 border-b border-gray-200;
+}
+
+.modal-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.modal-body {
+    @apply px-6 py-4;
+}
+
+.modal-footer {
+    @apply px-6 py-4 border-t border-gray-200 flex justify-end space-x-3;
+}
+
+/* 加载动画 */
+.loading-spinner {
+    @apply inline-block w-4 h-4 border-2 border-current border-r-transparent rounded-full animate-spin;
+}
+
+/* 进度条 */
+.progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2;
+}
+
+.progress-fill {
+    @apply bg-primary-600 h-2 rounded-full transition-all duration-300;
+}
+
+/* 面包屑导航 */
+.breadcrumb {
+    @apply flex items-center space-x-2 text-sm text-gray-500;
+}
+
+.breadcrumb-item {
+    @apply hover:text-gray-700;
+}
+
+.breadcrumb-separator {
+    @apply text-gray-400;
+}
+
+/* 标签样式 */
+.tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.tag-primary {
+    @apply bg-primary-100 text-primary-800;
+}
+
+.tag-secondary {
+    @apply bg-gray-100 text-gray-800;
+}
+
+.tag-success {
+    @apply bg-green-100 text-green-800;
+}
+
+.tag-warning {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.tag-danger {
+    @apply bg-red-100 text-red-800;
+}
+
+/* 环保主题特色样式 */
+.env-gradient {
+    background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+}
+
+.env-card {
+    @apply bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden;
+}
+
+.env-icon {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center text-xl;
+}
+
+.env-icon.air {
+    @apply bg-blue-100 text-blue-600;
+}
+
+.env-icon.water {
+    @apply bg-cyan-100 text-cyan-600;
+}
+
+.env-icon.soil {
+    @apply bg-amber-100 text-amber-600;
+}
+
+.env-icon.noise {
+    @apply bg-purple-100 text-purple-600;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .card {
+        @apply p-4;
+    }
+    
+    .stat-card {
+        @apply p-4;
+    }
+    
+    .chart-container {
+        @apply p-4;
+    }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
